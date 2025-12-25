@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Events, MenuController, Platform, AlertController } from '@ionic/angular';
+import { MenuController, Platform, AlertController } from '@ionic/angular';
+import { EventsService } from './providers/events.service';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
@@ -27,7 +28,7 @@ export class AppComponent implements OnInit {
     public platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private events: Events,
+    private events: EventsService,
     private router: Router,
     private menu: MenuController,
     private alertController: AlertController,
@@ -142,7 +143,13 @@ export class AppComponent implements OnInit {
   async addSpotify() {
     const alert = await this.alertController.create({
       header: 'Add Spotify',
-      message: 'To listen to the playlist on your own Spotify device, you need:<br>1. <b>Start playing any song NOW</b> on the Spotify device you want OpenDJ to play music. This ensures it is connected and active.<br>2. The username/password for your Spotify <b>Premium</b> account. (Free does not work, sorry)<br>3. Then press okay.',
+      message: `To listen to the playlist on your own Spotify device, you need:
+
+1. Start playing any song NOW on the Spotify device you want OpenDJ to play music. This ensures it is connected and active.
+
+2. The username/password for your Spotify Premium account. (Free does not work, sorry)
+
+3. Then press okay.`,
       buttons: [
         {
           text: 'Cancel',

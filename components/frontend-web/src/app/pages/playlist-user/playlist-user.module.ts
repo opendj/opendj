@@ -9,26 +9,22 @@ import { SharedModule } from 'src/app/components/shared.module';
 import { TooltipModule } from 'ng2-tooltip-directive';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    TooltipModule,
-    SharedModule,
-    RouterModule.forChild([
-      {
-        path: '',
-        component: PlaylistUserPage
-      }
-    ])
-  ],
-  declarations: [
-    PlaylistUserPage,
-    PlaylistAddModalComponent
-  ],
-  entryComponents: [
-    PlaylistAddModalComponent,
-    CurrentTrackComponent
-  ]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        TooltipModule,
+        SharedModule,
+        RouterModule.forChild([
+            {
+                path: '',
+                component: PlaylistUserPage
+            }
+        ])
+    ],
+    declarations: [
+        PlaylistUserPage,
+        PlaylistAddModalComponent
+    ]
 })
 export class PlaylistUserPageModule { }

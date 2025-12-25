@@ -8,8 +8,8 @@
 
 <ion-content fullscreen color="dark">
 
-    <ion-slides #slides pager="true" (ionSlideDidChange)="hanndleSlideChange()">
-        <ion-slide>
+    <swiper-container #swiper pagination="true" (slidechange)="hanndleSlideChange()">
+        <swiper-slide>
             <img src="assets/img/Logo_OpenDJ_128.png" class="slide-image" />
             <p>
                 Have you ever been at an event and disliked the music being played?<br/> The idea of OpenDJ is to solve this problem by applying open source principles to the music playlist of an event.
@@ -20,9 +20,9 @@
             <ion-button id="joinExistingEvent" fill="solid" size="small" color="medium" (click)="joinExistingEvent()" tappable>Join an existing Event
             </ion-button>
             <p style="color:rgb(100, 100, 100)">We use cookies, you accept <a href="/ui/legal">this</a> by clicking above</p>
-        </ion-slide>
+        </swiper-slide>
 
-        <ion-slide>
+        <swiper-slide>
             <h3 class="slide-title">How does it work?</h3>
             <p>
                 Participants of an event can contribute to the playlist by adding tracks. Everybody can see and add to the playlist. No special accounts, apps, or access to local WiFi needed. Access to OpenDJ works with every smartphone and internet browsers, even on
@@ -30,17 +30,17 @@
 
             </p>
             <img src="assets/img/OpenDJExampleViewUser.png" class="slide-image" />
-        </ion-slide>
+        </swiper-slide>
 
-        <ion-slide>
+        <swiper-slide>
             <h3 class="slide-title">What are Curators?</h3>
             <p>
                 Curators can edit the playlist (sorting/grouping by genre, deleting). Curators get more detailed information about a track (e.g. genre, bpm, danceability, likes/dislikes by users). There is no special skill needed to be curator, just a sense for music.
                 Of course you could hire a professional DJ as additional curator if you like.</p>
             <img src="assets/img/OpenDJExampleViewCurator.png" class="slide-image" />
-        </ion-slide>
+        </swiper-slide>
 
-        <ion-slide>
+        <swiper-slide>
             <h3 class="slide-title">Where does the music come from?</h3>
             <p>
                 The music is being played by a streaming provider, e.g. Spotify. As Event Owner, you need to provide your streaming provider credentials. OpenDJ is running in the internet and uses your streaming provider APIs to execute the playlist on a local device
@@ -48,9 +48,9 @@
                 web page).<br> The participants of your event just don't care about these details. They contribute to the playlist and enjoy the music they want to hear.
             </p>
             <img src="assets/img/provider/spotify_logo.png" class="slide-image" style="max-width: 300px;" />
-        </ion-slide>
+        </swiper-slide>
 
-        <ion-slide>
+        <swiper-slide>
             <h3 class="slide-title">Ready to start?</h3>
             <ion-button id="createOwnEvent" fill="solid" size="small" color="medium" (click)="createOwnEvent()" tappable>Create your own Event
             </ion-button>
@@ -59,7 +59,7 @@
 
             <p></p>
             <img src="assets/img/Logo_OpenDJ_128.png" class="slide-image" />
-        </ion-slide>
+        </swiper-slide>
 
-    </ion-slides>
+    </swiper-container>
 </ion-content>

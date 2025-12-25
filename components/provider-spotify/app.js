@@ -32,27 +32,28 @@ const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://local
 // ---------------------------------------------------------------------------
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
-const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret---"
-const datagrid = require('@dfroehli42/infinispan');
+const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
+const datagrid = require('infinispan');
 var cacheTracks = null;
 var cacheState = null;
 
 const CACHE_CONFIG_XML = `<infinispan>
     <cache-container>
         <distributed-cache mode="SYNC" name="dummy" owners="2">
-            <memory>
-                <object size="10000" strategy="REMOVE"/>
-            </memory>
+            <memory storage="HEAP"  max-count="10000" when-full="REMOVE"/>
             <expiration lifespan="-1" max-idle="-1" interval="0" />
             <partition-handling when-split="ALLOW_READS"/>
             <persistence>
-                <file-store shared="false" fetch-state="true" preload="true" max-entries="10000">
+                <file-store shared="false" preload="true">
                     <write-behind modification-queue-size="200" fail-silently="false"/>
                 </file-store>
             </persistence>
+            <encoding media-type="application/json"/>
         </distributed-cache>
     </cache-container>
 </infinispan>`
+
+
 
 async function createCache(name) {
   try {
@@ -67,7 +68,8 @@ async function createCache(name) {
         },
         auth: {
             user: DATAGRID_USER,
-            password: DATAGRID_PSWD
+            password: DATAGRID_PSWD,
+            sendImmediately: false
         },
 
         timeout: 10000
@@ -94,10 +96,14 @@ async function connectToCache(name) {
           cacheName: name,
           authentication: {
             enabled: true,
-            saslMechanism: 'PLAIN',
+            saslMechanism: 'DIGEST-MD5',
             userName: DATAGRID_USER,
-            password: DATAGRID_PSWD },
-          mediaType: 'application/json' });
+            password: DATAGRID_PSWD,
+            serverName: 'infinispan'},
+          dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+            }});
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);
     } catch (err) {
@@ -472,7 +478,7 @@ async function addAccountToEvent(event, account, spotifyUser) {
         throw {
             msg: "addAccountToEvent register with event failed?!",
             code: "SPTY-579"
-        }
+        }            
     }
 
     log.trace('end addAccountToEvent trackStarted=', trackStarted);
@@ -997,7 +1003,8 @@ async function getTrackDetails(account, trackID) {
 
         // #2: Get get Track Audio Features (danceability, energy and stuff):
         log.trace("getAudioFeaturesForTrack()");
-        audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
+// DFR 2025-12-25: This creates a 403???:
+        //        audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
 
         // When we have trackResult we get the album and artist ID , and with that, we can make call
         // #3 to get album details and ...

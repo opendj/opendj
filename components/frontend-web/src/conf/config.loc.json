@@ -5,7 +5,7 @@
     "websocketHost": "http://localhost:8083",
     "websocketPath": "/api/service-web/socket",
     "PLAYLIST_PROVIDER_API": "http://localhost:8082/api/service-playlist/v1",
-    "SPOTIFY_PROVIDER_API": "http:/localhost:8081/api/provider-spotify/v1",
+    "SPOTIFY_PROVIDER_API": "http://localhost:8081/api/provider-spotify/v1",
     "WEB_PROVIDER_API": "http://localhost:8083/api/service-web/v1",
     "SERVER_TIMEOUT": 2500,
     "HELP_PAGE_URL": "https://github.com/opendj/opendj-docs/wiki/userguide"

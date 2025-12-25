@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Events, ToastController, IonContent, AlertController } from '@ionic/angular';
+import { ToastController, IonContent, AlertController } from '@ionic/angular';
+import { EventsService } from '../../providers/events.service';
 import { UserDataService } from '../../providers/user-data.service';
-import { FormBuilder, FormGroup, Validators, FormControl, ValidatorFn, AbstractControl } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, FormControl, ValidatorFn, AbstractControl } from '@angular/forms';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
 import { UserSessionState } from 'src/app/models/usersessionstate';
@@ -16,7 +17,7 @@ import { ConfigService } from '../../providers/config.service';
 export class EventEditPage implements OnInit {
 
   @ViewChild(IonContent) content: IonContent;
-  eventForm: FormGroup;
+  eventForm: UntypedFormGroup;
   event = new MusicEvent();
   userState: UserSessionState;
   submitAttempt: boolean;
@@ -44,10 +45,10 @@ export class EventEditPage implements OnInit {
 
   constructor(
     public router: Router,
-    private events: Events,
+    private events: EventsService,
     public userDataService: UserDataService,
     public feService: FEService,
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     public toastController: ToastController,
     public alertController: AlertController,
     public configService: ConfigService,
@@ -63,7 +64,7 @@ export class EventEditPage implements OnInit {
     toast.present();
   }
 
-  private mapEventToForm(f: FormGroup, e: MusicEvent) {
+  private mapEventToForm(f: UntypedFormGroup, e: MusicEvent) {
     console.debug('begin mapEventToForm');
     f.patchValue(e);
 
@@ -142,7 +143,7 @@ export class EventEditPage implements OnInit {
   public async deleteAlertConfirm() {
     const alert = await this.alertController.create({
       header: 'Delete Event!',
-      message: 'Are you sure you want to <strong>delete</strong> this event?',
+      message: 'Are you sure you want to DELETE this event?',
       buttons: [
         {
           text: 'Cancel',
@@ -219,7 +220,13 @@ export class EventEditPage implements OnInit {
   public async addProviderSpotify() {
     const alert = await this.alertController.create({
       header: 'Add Spotify',
-      message: 'To add Spotify as music provider for your event, you need:<br>1. <b>Start playing any song NOW</b> on the Spotify device you want OpenDJ to play music. This ensures it is connected and active.<br>2. The username/password for your Spotify <b>Premium</b> account. (Free does not work, sorry)<br>3. Then press okay.',
+      message: `To add Spotify as music provider for your event, you need:
+
+1. Start playing any song NOW on the Spotify device you want OpenDJ to play music. This ensures it is connected and active.
+
+2. The username/password for your Spotify Premium account. (Free does not work, sorry)
+
+3. Then press okay.`,
       buttons: [
         {
           text: 'Cancel',

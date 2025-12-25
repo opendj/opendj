@@ -1,4 +1,4 @@
 node_modules
 .DS_Store
 .vscode
-components/spotify-provider-boundary/env.sh
+secret*

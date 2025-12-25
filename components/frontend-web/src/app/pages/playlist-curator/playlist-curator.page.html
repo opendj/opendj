@@ -7,7 +7,7 @@
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
-            <ion-menu-button id="playlist-menu-button" color="light"></ion-menu-button>
+            <ion-menu-button id="playlist-menu-button" menu="app-menu" color="light"></ion-menu-button>
         </ion-buttons>
         <ion-title color="light">
             {{currentEvent?.name}} - {{currentPlaylist?.nextTracks?.length}} Tracks
@@ -47,7 +47,8 @@
             <ion-virtual-scroll [items]="currentPlaylist?.nextTracks" virtualTrackBy="item.id" approxItemHeight="63px">
                 <ion-row nowrap *virtualItem="let item" id="track-{{item.id}}">
 -->
-            <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
+            <ion-reorder *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
+            <ion-row nowrap>
                 <!-- Album Cover-->
                 <ion-col *ngIf="platform.width()>420" size="auto" class="ion-align-self-center">
                     <a href="{{item.image_url_ref}}" target="_blank">
@@ -111,7 +112,7 @@
 
                     <!-- TOP -->
                     <ion-button id="action-top-{{item.id}}" size="small" class="track-action-button" fill="outline" shape="round" color="primary " (click)="moveTop(item, item.pos)" tappable>
-                        <ion-icon slot="icon-only" name="arrow-round-up"></ion-icon>
+                        <ion-icon slot="icon-only" name="arrow-up-circle"></ion-icon>
                     </ion-button>
 
 
@@ -130,14 +131,13 @@
 
                 <!-- Last not least: the most important feature: the re-order button! -->
                 <ion-col size="auto " class="track-mov-col  ion-align-self-center workaroundTransparency">
-                    <ion-reorder>
-                        <ion-chip id="action-mov-{{item.id}}" color="secondary" class="track-action-mov">
-                            <ion-label>{{item.pos}}</ion-label>
-                        </ion-chip>
-                    </ion-reorder>
+                    <ion-chip id="action-mov-{{item.id}}" color="secondary" class="track-action-mov">
+                        <ion-label>{{item.pos}}</ion-label>
+                    </ion-chip>
                 </ion-col>
 
             </ion-row>
+            </ion-reorder>
         </ion-reorder-group>
 
 
