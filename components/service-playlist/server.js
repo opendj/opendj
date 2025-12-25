@@ -1808,23 +1808,22 @@ app.use("/api/service-playlist/v1", router);
 // ------------------------------ datagrid stuff -----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-const datagrid = require('@dfroehli42/infinispan');
+const datagrid = require('infinispan');
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
 const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
 const CACHE_CONFIG_XML = `<infinispan>
     <cache-container>
         <distributed-cache mode="SYNC" name="dummy" owners="2">
-            <memory>
-                <object size="10000" strategy="REMOVE"/>
-            </memory>
+            <memory storage="HEAP"  max-count="10000" when-full="REMOVE"/>
             <expiration lifespan="-1" max-idle="-1" interval="0" />
             <partition-handling when-split="ALLOW_READS"/>
             <persistence>
-                <file-store shared="false" fetch-state="true" preload="true" max-entries="10000">
+                <file-store shared="false" preload="true">
                     <write-behind modification-queue-size="200" fail-silently="false"/>
                 </file-store>
             </persistence>
+            <encoding media-type="application/json"/>
         </distributed-cache>
     </cache-container>
 </infinispan>`
@@ -1847,7 +1846,8 @@ async function createCache(name) {
         },
         auth: {
             user: DATAGRID_USER,
-            password: DATAGRID_PSWD
+            password: DATAGRID_PSWD,
+            sendImmediately: false
         },
 
         timeout: 10000
@@ -1865,22 +1865,26 @@ async function createCache(name) {
 async function connectToGrid(name) {
     let grid = null;
     try {
-        log.debug("begin connectToGrid %s", name);
+        log.debug("begin connectToCache %s", name);
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
         grid = await datagrid.client([{ host: host, port: port }], {
-          cacheName: name, mediaType: 'application/json',
+          cacheName: name,
           authentication: {
             enabled: true,
-            saslMechanism: 'PLAIN',
+            saslMechanism: 'DIGEST-MD5',
             userName: DATAGRID_USER,
-            password: DATAGRID_PSWD },
-        });
+            password: DATAGRID_PSWD,
+            serverName: 'infinispan'},
+          dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+            }});
         readyState.datagridClient = true;
-        log.info("CONNECTED to grid %s", name);
+        log.debug("connected to grid %s", name);
     } catch (err) {
-        if (err.includes("CacheNotFoundException")) {
+        if ((""+err).includes("CacheNotFoundException")) {
           await createCache(name);
           grid = connectToGrid(name);
         } else {

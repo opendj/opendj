@@ -1,7 +1,8 @@
 import { ConfigService } from '../../providers/config.service';
 import { UserDataService } from '../../providers/user-data.service';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar, Events } from '@ionic/angular';
+import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
+import { EventsService } from '../../providers/events.service';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from '../../providers/fes.service';
@@ -40,7 +41,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
   constructor(
     public modalController: ModalController,
     public actionSheetController: ActionSheetController,
-    private events: Events,
+    private events: EventsService,
     public toastController: ToastController,
     public websocketService: WebsocketService,
     public mockService: MockService,

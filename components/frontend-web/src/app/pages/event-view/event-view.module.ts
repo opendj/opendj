@@ -13,25 +13,22 @@ import { NgxTwitterTimelineModule } from 'ngx-twitter-timeline';
 */
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    TooltipModule,
-    SharedModule,
-//    NgxTwitterTimelineModule,
-    RouterModule.forChild([
-      {
-        path: '',
-        component: EventViewPage
-      }
-    ]),
-  ],
-  declarations: [
-    EventViewPage,
-  ],
-  entryComponents: [
-    CurrentTrackComponent
-  ]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        TooltipModule,
+        SharedModule,
+        //    NgxTwitterTimelineModule,
+        RouterModule.forChild([
+            {
+                path: '',
+                component: EventViewPage
+            }
+        ]),
+    ],
+    declarations: [
+        EventViewPage,
+    ]
 })
 export class EventViewPageModule { }

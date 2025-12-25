@@ -1,7 +1,8 @@
 import { ConfigService } from '../../providers/config.service';
 import { UserDataService } from '../../providers/user-data.service';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar, Events } from '@ionic/angular';
+import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
+import { EventsService } from '../../providers/events.service';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from '../../providers/fes.service';
@@ -41,7 +42,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     public modalController: ModalController,
     public actionSheetController: ActionSheetController,
     public toastController: ToastController,
-    private events: Events,
+    private events: EventsService,
     public websocketService: WebsocketService,
     public mockService: MockService,
     public feService: FEService,
@@ -282,7 +283,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const from = event.detail.from;
     const to = event.detail.to;
     this.moveTrack(from, from < to ? to + 1 : to);
-    event.detail.complete(true);
+    event.detail.complete();
   }
 
   toggleOptions() {

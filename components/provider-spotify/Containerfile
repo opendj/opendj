@@ -1,0 +1,41 @@
+# Stage 1: Build the application
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy application source
+COPY . .
+
+# Stage 2: Final Runtime
+# Note: 'scratch' is only possible if you use a fully static binary.
+# 'astj/static-node' provides these, or we use 'distroless' for safety.
+FROM gcr.io/distroless/nodejs20-debian12
+WORKDIR /app
+
+# Copy the production dependencies and source from the builder
+COPY --from=builder /app /app
+
+# Run the application
+USER 1000
+EXPOSE 3000
+CMD ["index.js"]
+
+
+
+
+
+-----------
+    # Build stage: use builder variant to install dependencies and compile
+FROM quay.io/hummingbird/go:latest-builder AS builder
+RUN dnf install -y <build dependencies>
+COPY . /src
+WORKDIR /src
+RUN go build -o /app .
+
+# Runtime stage: use minimal base image for the compiled binary
+FROM quay.io/hummingbird/core-runtime:latest
+COPY --from=builder /app /app
+ENTRYPOINT ["/app"]

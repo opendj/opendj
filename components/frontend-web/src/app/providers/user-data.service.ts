@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Events } from '@ionic/angular';
-import { Storage } from '@ionic/storage';
+import { Storage } from '@ionic/storage-angular';
 import { UserSessionState } from '../models/usersessionstate';
+import { EventsService } from './events.service';
 
 
 @Injectable({
@@ -11,11 +11,19 @@ export class UserDataService {
   HAS_LOGGED_IN = 'hasLoggedIn';
   IS_CURATOR = 'isCurator';
   USERNAME = 'username';
+  private _storage: Storage | null = null;
 
   constructor(
-    public events: Events,
-    public storage: Storage
-  ) { }
+    public events: EventsService,
+    private storage: Storage
+  ) {
+    this.init();
+  }
+
+  async init() {
+    const storage = await this.storage.create();
+    this._storage = storage;
+  }
 
   getUser(): Promise<UserSessionState> {
     console.debug('UserDataService: getUser');

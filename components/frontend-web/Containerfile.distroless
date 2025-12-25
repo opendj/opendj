@@ -1,0 +1,59 @@
+# =============================================================================
+# Alternative: Truly Distroless Build using Node.js distroless image
+# This is more secure but requires the 'serve' package
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Build the Angular application
+# -----------------------------------------------------------------------------
+FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with legacy peer deps flag
+# Also install 'serve' for serving static files in distroless
+RUN npm ci --legacy-peer-deps && \
+    npm install --no-save serve
+
+# Copy source code
+COPY . .
+
+# Build the Angular app for production
+RUN npm run build
+
+# -----------------------------------------------------------------------------
+# Stage 2: Production runtime with distroless Node.js
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/nodejs20-debian12:nonroot
+
+# Add metadata labels
+LABEL maintainer="OpenDJ"
+LABEL description="OpenDJ Frontend Web Application (Distroless)"
+LABEL org.opencontainers.image.source="https://github.com/opendj/opendj"
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/www ./www
+
+# Copy serve package for serving static files
+COPY --from=builder /app/node_modules/serve ./node_modules/serve
+COPY --from=builder /app/node_modules/serve-handler ./node_modules/serve-handler
+COPY --from=builder /app/node_modules/path-is-inside ./node_modules/path-is-inside
+COPY --from=builder /app/node_modules/path-to-regexp ./node_modules/path-to-regexp
+COPY --from=builder /app/node_modules/mime-types ./node_modules/mime-types
+COPY --from=builder /app/node_modules/mime-db ./node_modules/mime-db
+COPY --from=builder /app/node_modules/minimatch ./node_modules/minimatch
+COPY --from=builder /app/node_modules/brace-expansion ./node_modules/brace-expansion
+COPY --from=builder /app/node_modules/balanced-match ./node_modules/balanced-match
+COPY --from=builder /app/node_modules/concat-map ./node_modules/concat-map
+
+# Expose port 8080
+EXPOSE 8080
+
+# Run serve to host the static files
+# Note: Distroless uses the 'nonroot' user by default for security
+CMD ["node_modules/serve/build/main.js", "-s", "www", "-p", "8080", "-n"]

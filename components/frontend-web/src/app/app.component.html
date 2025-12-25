@@ -1,6 +1,6 @@
 <ion-app id="app-main">
 
-    <ion-menu id="app-menu" menuId="app-menu" swipe-gesture="false">
+    <ion-menu contentId="main-content" menuId="app-menu" swipe-gesture="false">
         <ion-content fullscreen color="dark">
 
             <ion-header>
@@ -12,7 +12,7 @@
             <ion-list class="ion-no-padding" color="dark">
                 <ion-menu-toggle>
                     <ion-item color="dark" *ngIf="userState?.isLoggedIn">
-                        <ion-icon slot="start" name="contact"></ion-icon>
+                        <ion-icon slot="start" name="person"></ion-icon>
                         <ion-label>
                             {{userState.username}}
                         </ion-label>
@@ -76,7 +76,7 @@
             </ion-list>
         </ion-content>
     </ion-menu>
-    <ion-router-outlet main [swipeGesture]="false"></ion-router-outlet>
+    <ion-router-outlet id="main-content" [swipeGesture]="false"></ion-router-outlet>
     <!--
     <div *ngIf="platform.is('desktop')" class="desktop-footer" padding>
         <a href="https://www.openshift.com/" title="Powered by OpenShift Online">

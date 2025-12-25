@@ -1,7 +1,7 @@
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
-            <ion-menu-button id="event-menu-button" color="light"></ion-menu-button>
+            <ion-menu-button id="event-menu-button" menu="app-menu" color="light"></ion-menu-button>
         </ion-buttons>
 
         <ion-title color="light">
@@ -10,7 +10,7 @@
 
         <ion-buttons slot="end" margin-right>
             <ion-button id="event-more-options" color="light" (click)="presentMoreOptions($event)">
-                <ion-icon slot="icon-only" name="more"></ion-icon>
+                <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
             </ion-button>
         </ion-buttons>
 
@@ -68,7 +68,7 @@
                             </ion-input>
                             <ion-note slot="end">
                                 <ion-button id="generateUsername" (click)="generateUsername()" tappable shape="round" color="primary" size="small" fill="outline">
-                                    <ion-icon name="color-wand"></ion-icon>
+                                    <ion-icon name="sparkles"></ion-icon>
                                 </ion-button>
                             </ion-note>
                         </ion-item>

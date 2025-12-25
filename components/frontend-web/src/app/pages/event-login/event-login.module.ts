@@ -16,21 +16,17 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    SharedModule,
-    IonicModule,
-    RouterModule.forChild(routes)
-  ],
-  declarations: [
-    EventLoginPage,
-    MoreOptionsComponent,
-    LoginModalComponent
-  ],
-  entryComponents: [
-    LoginModalComponent,
-    MoreOptionsComponent,
-  ]
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        SharedModule,
+        IonicModule,
+        RouterModule.forChild(routes)
+    ],
+    declarations: [
+        EventLoginPage,
+        MoreOptionsComponent,
+        LoginModalComponent
+    ]
 })
 export class EventLoginPageModule {}

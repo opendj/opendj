@@ -24,8 +24,17 @@ export class ConfigService {
     async loadConfigurationData() {
         console.debug('loadConfigurationData');
 
-        const data = await this.http.get<any>('conf/config.json').toPromise();
-
+        let data = null; 
+        
+        try {
+            console.debug('trying to load conf/config.loc.json');
+            data = await this.http.get<any>('conf/config.loc.json').toPromise();
+       
+        } catch (error) {
+            console.debug('local config loading failed - trying config.json');
+            data = await this.http.get<any>('conf/config.json').toPromise();
+        }
+     
         console.debug('App config loaded: ' + JSON.stringify(data));
         this.enableDebug = data.enableDebug;
         this.curatorPassword = data.curatorPassword;

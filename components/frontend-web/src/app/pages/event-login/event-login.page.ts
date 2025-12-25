@@ -1,11 +1,12 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Events, ModalController, ToastController, AlertController, PopoverController, Platform } from '@ionic/angular';
+import { ModalController, ToastController, AlertController, PopoverController, Platform } from '@ionic/angular';
+import { EventsService } from '../../providers/events.service';
 import { UserDataService } from '../../providers/user-data.service';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
 import { UserSessionState } from 'src/app/models/usersessionstate';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import * as moment from 'moment';
 import { UsernameGeneratorService } from 'src/app/providers/username-generator.service';
 import { HttpClient } from '@angular/common/http';
@@ -22,7 +23,7 @@ export class EventLoginPage implements OnDestroy, OnInit {
   event: MusicEvent;
   userState: UserSessionState;
   navigationSubscription;
-  loginForm: FormGroup;
+  loginForm: UntypedFormGroup;
 //  submitAttempt: boolean;
 
   static getSessionStateForContext(ctx: string, event: MusicEvent, username: string): UserSessionState {
@@ -125,7 +126,7 @@ export class EventLoginPage implements OnDestroy, OnInit {
 
   constructor(
     public router: Router,
-    private events: Events,
+    private events: EventsService,
     public userDataService: UserDataService,
     public feService: FEService,
     public usergenerator: UsernameGeneratorService,
@@ -134,7 +135,7 @@ export class EventLoginPage implements OnDestroy, OnInit {
     public toastController: ToastController,
     public alertController: AlertController,
     public popOverCtrl: PopoverController,
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     public http: HttpClient,
     public confService: ConfigService,
     public platform: Platform
@@ -214,7 +215,11 @@ export class EventLoginPage implements OnDestroy, OnInit {
 
     const popup = await this.alertController.create({
       header: 'Switch Event',
-      message: 'Please enter the ID of the event.<br>Look around, it should be advertised at the event location.<br>Ask your host!',
+      message: `Please enter the ID of the event.
+
+Look around, it should be advertised at the event location.
+
+Ask your host!`,
       inputs: [
         {
           name: 'eventID',
@@ -397,7 +402,7 @@ export class LoginModalComponent implements OnInit {
   @Input() currentEvent: MusicEvent;
   @Input() context: string;
 
-  loginForm: FormGroup;
+  loginForm: UntypedFormGroup;
   submitAttempt: boolean;
 
 
@@ -406,8 +411,8 @@ export class LoginModalComponent implements OnInit {
     private modalController: ModalController,
     private feService: FEService,
     private usergenerator: UsernameGeneratorService,
-    private formBuilder: FormBuilder,
-    private events: Events,
+    private formBuilder: UntypedFormBuilder,
+    private events: EventsService,
     private router: Router,
     private toastController: ToastController,
     private http: HttpClient,

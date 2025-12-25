@@ -16,6 +16,7 @@ const ENV_EMIT_ACTIVITY = (process.env.EMIT_ACTIVITY || 'true') == 'true';
 
 const ENV_KAFKA_HOST = process.env.KAFKA_HOST || "localhost:9092";
 const ENV_KAFKA_TOPIC_ACTIVITY = process.env.topic || "opendj.event.activity";
+const ENV_KAFKA_IGNORE_MISSING = (process.env.KAFKA_IGNORE_MISSING || 'false') == 'true';
 
 const log4js = require('log4js')
 const log = log4js.getLogger();
@@ -170,7 +171,13 @@ kafkaClient.on('error', function(err) {
     log.error("kafkaClient error: %s -  reconnecting....", err);
     readyState.kafkaClient = false;
     readyState.lastError = err;
-    kafkaClient.connect();
+    if (ENV_KAFKA_IGNORE_MISSING) {
+        log.warn("kafkaClient error is ignored");
+    } else {
+        log.info("kafkaClient reconnecting after error", err);
+        kafkaClient.connect();
+    }
+    
 });
 
 kafkaClient.on('connect', function(data) {
@@ -221,7 +228,7 @@ function startKafkaConsumer() {
 // ------------------------------ datagrid stuff -----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-const datagrid = require('@dfroehli42/infinispan');
+const datagrid = require('infinispan');
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
 const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
@@ -236,13 +243,17 @@ async function connectToGrid(name) {
         let host = splitter[0];
         let port = splitter[1];
         grid = await datagrid.client([{ host: host, port: port }], {
-          cacheName: name, mediaType: 'application/json',
+          cacheName: name,
           authentication: {
             enabled: true,
-            saslMechanism: 'PLAIN',
+            saslMechanism: 'DIGEST-MD5',
             userName: DATAGRID_USER,
-            password: DATAGRID_PSWD },
-        });
+            password: DATAGRID_PSWD,
+            serverName: 'infinispan'},
+          dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+            }});
         readyState.datagridClient = true;
         log.debug("connectToGrid grid=%s client=%s", name, grid);
         log.info("connected to grid %s", name);

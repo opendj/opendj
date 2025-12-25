@@ -50,11 +50,11 @@
         "xo": "^0.38.2"
     },
     "dependencies": {
-        "@dfroehli42/infinispan": "^0.7.0-hrjs36-basic-auth",
         "body-parser": "^1.19.0",
         "compression": "^1.7.4",
         "cors": "^2.8.5",
         "express": "4.16.0",
+        "infinispan": "^0.12.0",
         "license-reporter": "^1.2.2",
         "log4js": "^4.5.1",
         "promise-retry": "^1.1.1",

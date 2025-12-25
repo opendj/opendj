@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, MenuController, IonSlides } from '@ionic/angular';
+import { AlertController, MenuController } from '@ionic/angular';
+import Swiper from 'swiper';
 
 @Component({
   selector: 'landing',
@@ -9,7 +10,8 @@ import { AlertController, MenuController, IonSlides } from '@ionic/angular';
 })
 export class LandingPage implements OnInit {
 
-  @ViewChild('slides') slides: IonSlides;
+  @ViewChild('swiper') swiperRef: any;
+  swiper?: Swiper;
   showSkip = false;
 
   constructor(
@@ -22,7 +24,7 @@ export class LandingPage implements OnInit {
   }
 
   skip() {
-    this.slides.slideTo(0);
+    this.swiper?.slideTo(0);
   }
 
   async joinExistingEvent() {
@@ -30,7 +32,11 @@ export class LandingPage implements OnInit {
 
     const popup = await this.alertController.create({
       header: 'Join Existing Event',
-      message: 'Please enter the ID of the event.<br>Look around, it should be advertised at the event location.<br>Ask your host!',
+      message: `Please enter the ID of the event.
+
+Look around, it should be advertised at the event location.
+
+Ask your host!`,
       inputs: [
         {
           id: 'eventID',
@@ -71,17 +77,20 @@ export class LandingPage implements OnInit {
 
   hanndleSlideChange() {
     // console.log('Slide change');
-    this.slides.getActiveIndex().then((value) => {
-      // console.log(value);
-      if (value !== 0) {
-        this.showSkip = true;
-      } else {
-        this.showSkip = false;
-      }
-    });
+    const value = this.swiper?.activeIndex || 0;
+    // console.log(value);
+    if (value !== 0) {
+      this.showSkip = true;
+    } else {
+      this.showSkip = false;
+    }
   }
 
   ngOnInit() {
+  }
+
+  ngAfterViewInit() {
+    this.swiper = this.swiperRef?.nativeElement.swiper;
   }
 
 }
