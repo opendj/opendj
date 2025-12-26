@@ -190,8 +190,8 @@ const kafka = new Kafka({
     retry: {
         retries: 10,
         factor: 1,
-        minTimeout: 1000,
-        maxTimeout: 1000,
+        minTimeout: 5000,
+        maxTimeout: 2000,
         randomize: true,
     },
     logLevel: logLevel.ERROR,
@@ -202,13 +202,111 @@ log.info("KafkaJS client initialized with brokers: %s", ENV_KAFKA_HOST);
 readyState.kafkaClient = true;
 readyState.lastError = '';
 
+// Consumer state tracking
+let consumerInstance = null;
+let isReconnecting = false;
+let reconnectAttempts = 0;
+let isShuttingDown = false; // Flag to prevent reconnection during shutdown
+const MAX_RECONNECT_ATTEMPTS = 100; // Effectively unlimited with exponential backoff
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+const MAX_RETRY_DELAY = 60000; // 60 seconds
+
+// Calculate exponential backoff delay
+function getReconnectDelay(attempt) {
+    const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, attempt), MAX_RETRY_DELAY);
+    const jitter = Math.random() * 1000; // Add up to 1 second jitter
+    return delay + jitter;
+}
+
+// Reconnection function with exponential backoff
+async function reconnectConsumer() {
+    if (isShuttingDown) {
+        log.info("Application is shutting down, skipping reconnection");
+        return;
+    }
+
+    if (isReconnecting) {
+        log.debug("Reconnection already in progress, skipping");
+        return;
+    }
+
+    isReconnecting = true;
+    reconnectAttempts++;
+
+    const delay = getReconnectDelay(reconnectAttempts);
+    log.info("Attempting to reconnect Kafka consumer (attempt %d) after %dms", reconnectAttempts, delay);
+
+    setTimeout(async () => {
+        try {
+            await startKafkaConsumer();
+            reconnectAttempts = 0; // Reset on successful connection
+            isReconnecting = false;
+            log.info("Kafka consumer reconnected successfully");
+        } catch (error) {
+            log.error("Reconnection attempt %d failed: %s", reconnectAttempts, error);
+            isReconnecting = false;
+
+            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                reconnectConsumer();
+            } else {
+                log.fatal("Max reconnection attempts reached. Manual intervention required.");
+                readyState.kafkaClient = false;
+                readyState.lastError = "Max reconnection attempts exceeded";
+            }
+        }
+    }, delay);
+}
+
 async function startKafkaConsumer() {
+    // Disconnect old consumer if exists
+    if (consumerInstance) {
+        try {
+            log.debug("Disconnecting old consumer instance");
+            await consumerInstance.disconnect();
+        } catch (err) {
+            log.warn("Error disconnecting old consumer (ignored): %s", err);
+        }
+    }
+
     // Create consumer with random group ID (all pods consume independently)
     const consumer = kafka.consumer({
         groupId: `opendj-service-web-${uuidv1()}`,
         retry: {
-            retries: 10,
+            retries: 2,
         }
+    });
+
+    // Store consumer instance for reconnection
+    consumerInstance = consumer;
+
+    // Add event handlers for connection issues
+    consumer.on(consumer.events.DISCONNECT, () => {
+        if (!isShuttingDown) {
+            log.warn("Kafka consumer DISCONNECTED - attempting reconnection");
+            readyState.kafkaClient = false;
+            readyState.lastError = "Consumer disconnected";
+            reconnectConsumer();
+        } else {
+            log.info("Kafka consumer DISCONNECTED during shutdown (expected)");
+        }
+    });
+
+    consumer.on(consumer.events.CRASH, ({ error, groupId }) => {
+        if (!isShuttingDown) {
+            log.error("Kafka consumer CRASHED for groupId %s: %s", groupId, error);
+            readyState.kafkaClient = false;
+            readyState.lastError = `Consumer crashed: ${error}`;
+            reconnectConsumer();
+        } else {
+            log.info("Kafka consumer CRASHED during shutdown (ignored)");
+        }
+    });
+
+    consumer.on(consumer.events.CONNECT, () => {
+        log.info("Kafka consumer CONNECTED successfully");
+        readyState.kafkaClient = true;
+        readyState.lastError = '';
+        reconnectAttempts = 0; // Reset reconnect counter on successful connection
     });
 
     try {
@@ -250,22 +348,30 @@ async function startKafkaConsumer() {
 
     } catch (error) {
         log.error("Kafka consumer error: %s", error);
+        readyState.kafkaClient = false;
+        readyState.lastError = error.message || error;
 
         // Check for topic not exist error
         if (error && error.message && (error.message.includes('topic') || error.type === 'UNKNOWN_TOPIC_OR_PARTITION')) {
             log.warn("Creating consumer failed with topic not exist error - trying to create the topic %s", ENV_KAFKA_TOPIC_ACTIVITY);
-            await kafkaCreateTopic(kafka, ENV_KAFKA_TOPIC_ACTIVITY);
-
-            // Retry consumer start after topic creation
-            setTimeout(() => startKafkaConsumer(), 2000);
+            try {
+                await kafkaCreateTopic(kafka, ENV_KAFKA_TOPIC_ACTIVITY);
+                log.info("Topic created, reconnecting consumer...");
+            } catch (topicError) {
+                log.error("Failed to create topic: %s", topicError);
+            }
+            // Use reconnection logic with exponential backoff
+            reconnectConsumer();
         } else if (!ENV_KAFKA_IGNORE_MISSING) {
-            // Retry on other errors
-            log.info("Retrying consumer connection in 5 seconds...");
-            setTimeout(() => startKafkaConsumer(), 5000);
+            // Retry on other errors using reconnection logic
+            log.info("Consumer failed to start, using reconnection logic...");
+            reconnectConsumer();
+        } else {
+            log.warn("Kafka consumer failed and KAFKA_IGNORE_MISSING is true - not reconnecting");
         }
     }
 
-    // Handle consumer disconnection
+    // Handle graceful shutdown - prevent reconnection during shutdown
     const errorTypes = ['unhandledRejection', 'uncaughtException'];
     const signalTraps = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
 
@@ -273,7 +379,10 @@ async function startKafkaConsumer() {
         process.on(type, async (e) => {
             try {
                 log.error(`process.on ${type}`, e);
-                await consumer.disconnect();
+                isShuttingDown = true; // Prevent reconnection
+                if (consumerInstance) {
+                    await consumerInstance.disconnect();
+                }
                 process.exit(0);
             } catch (_) {
                 process.exit(1);
@@ -284,7 +393,11 @@ async function startKafkaConsumer() {
     signalTraps.forEach(type => {
         process.once(type, async () => {
             try {
-                await consumer.disconnect();
+                log.info(`Received ${type} signal, shutting down gracefully`);
+                isShuttingDown = true; // Prevent reconnection
+                if (consumerInstance) {
+                    await consumerInstance.disconnect();
+                }
             } finally {
                 process.kill(process.pid, type);
             }
