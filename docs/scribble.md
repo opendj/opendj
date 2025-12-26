@@ -164,6 +164,11 @@ ionic info
 ionic generate page pages/event
 ionic serve
 
+2025: 
+npm start
+
+
+
 # oc label from dev to tst:
 oc project dfroehli-opendj-dev
 oc tag provider-spotify:latest provider-spotify:tst
@@ -188,6 +193,10 @@ git push origin 0.5.1
  # Build and run event activity:
  ./mvnw compile quarkus:dev
 
+# Run event activ ity with port:
+ ./mvnw quarkus:dev -D quarkus.http.port=8085
+
+ 
  # Debug Quarkus:
  F1 Quarkus - Debug current Project
 

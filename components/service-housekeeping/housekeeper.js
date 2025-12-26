@@ -22,7 +22,7 @@ const ENV_CRONTAB = process.env.CRONTAB
 // ------------------------------ datagrid stuff -----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-const datagrid = require('@dfroehli42/infinispan');
+const datagrid = require('infinispan');
 var gridEvents = null;
 var gridEventExt = null;
 var gridPlaylists = null;
@@ -36,13 +36,17 @@ async function connectToGrid(name) {
         let host = splitter[0];
         let port = splitter[1];
         cache = await datagrid.client([{ host: host, port: port }], {
-          cacheName: name, mediaType: 'application/json',
+          cacheName: name,
           authentication: {
             enabled: true,
-            saslMechanism: 'PLAIN',
+            saslMechanism: 'DIGEST-MD5',
             userName: ENV_DATAGRID_USER,
-            password: ENV_DATAGRID_PSWD },
-        });
+            password: ENV_DATAGRID_PSWD,
+            serverName: 'infinispan'},
+          dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+            }});
         log.trace("end connected to grid %s", name);
     } catch (err) {
         throw "DataGrid connection FAILED with err " + err;
