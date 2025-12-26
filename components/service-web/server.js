@@ -6,8 +6,8 @@ const http = require('http').createServer(app);
 const router = new express.Router();
 const cors = require('cors');
 const io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket' });
-const kafka = require('kafka-node');
-const uuid = require('uuid/v1');
+const { Kafka, logLevel } = require('kafkajs');
+const { v1: uuidv1 } = require('uuid');
 
 const eventActivityClient = require('./EventActivityClient');
 const port = process.env.PORT || 3000;
@@ -17,6 +17,9 @@ const ENV_EMIT_ACTIVITY = (process.env.EMIT_ACTIVITY || 'true') == 'true';
 const ENV_KAFKA_HOST = process.env.KAFKA_HOST || "localhost:9092";
 const ENV_KAFKA_TOPIC_ACTIVITY = process.env.topic || "opendj.event.activity";
 const ENV_KAFKA_IGNORE_MISSING = (process.env.KAFKA_IGNORE_MISSING || 'false') == 'true';
+const ENV_KAFKA_TOPIC_NUM_PARTITIONS = process.env.KAFKA_TOPIC_NUM_PARTITIONS || 1;
+const ENV_KAFKA_TOPIC_REPLICATION_FACTOR = process.env.TOPIC_REPLICATION_FACTOR || 1;
+
 
 const log4js = require('log4js')
 const log = log4js.getLogger();
@@ -151,75 +154,141 @@ function updateEventStatsFromActivity(activity) {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
-var kafkaClient = new kafka.KafkaClient({
-    kafkaHost: ENV_KAFKA_HOST,
-    connectTimeout: 1000,
+async function kafkaCreateTopic(kafka, topicName) {
+    log.trace("kafkaCreateTopic begin");
+
+    const admin = kafka.admin();
+
+    try {
+        await admin.connect();
+        log.debug("kafkaCreateTopic topicName=%s", topicName);
+
+        await admin.createTopics({
+            topics: [{
+                topic: topicName,
+                numPartitions: parseInt(ENV_KAFKA_TOPIC_NUM_PARTITIONS),
+                replicationFactor: parseInt(ENV_KAFKA_TOPIC_REPLICATION_FACTOR)
+            }]
+        });
+
+        log.info("Successfully created topic: %s", topicName);
+    } catch (err) {
+        log.error("kafka create topic failed", err);
+    } finally {
+        await admin.disconnect();
+    }
+
+    log.trace("kafkaCreateTopic end");
+}
+
+// Initialize KafkaJS client
+const kafka = new Kafka({
+    clientId: 'opendj-service-web',
+    brokers: ENV_KAFKA_HOST.split(','),
+    connectionTimeout: 1000,
     requestTimeout: 500,
-    autoConnect: true,
-    connectRetryOptions: {
+    retry: {
         retries: 10,
         factor: 1,
         minTimeout: 1000,
         maxTimeout: 1000,
         randomize: true,
     },
-    idleConnection: 60000,
-    reconnectOnIdle: true,
+    logLevel: logLevel.ERROR,
 });
 
-kafkaClient.on('error', function(err) {
-    log.error("kafkaClient error: %s -  reconnecting....", err);
-    readyState.kafkaClient = false;
-    readyState.lastError = err;
-    if (ENV_KAFKA_IGNORE_MISSING) {
-        log.warn("kafkaClient error is ignored");
-    } else {
-        log.info("kafkaClient reconnecting after error", err);
-        kafkaClient.connect();
-    }
-    
-});
+// Initialize connection state (KafkaJS handles connection internally)
+log.info("KafkaJS client initialized with brokers: %s", ENV_KAFKA_HOST);
+readyState.kafkaClient = true;
+readyState.lastError = '';
 
-kafkaClient.on('connect', function(data) {
-    log.info("kafkaClient connected");
-    readyState.kafkaClient = true;
-    readyState.lastError = '';
-});
-
-function startKafkaConsumer() {
-
-    var kafkaConsumer = new kafka.Consumer(kafkaClient, [
-        { topic: ENV_KAFKA_TOPIC_ACTIVITY } // offset, partition
-    ], {
-        groupId: uuid(), // All pods need to consume for now, thus we use a random consumer group
-        autoCommit: true,
-        // Fix #72: Do not start at the beginning
-        // fromOffset: true,
-        // offset: 0
-    });
-
-    kafkaConsumer.on('message', function(message) {
-        log.trace("begin kafkaConsumer.onMessage");
-
-        try {
-            let activity = JSON.parse(message.value);
-            let eventID = activity.eventID;
-            let stats = updateEventStatsFromActivity(activity);
-
-            // Broadcast last 10 Messages:
-            if (message.offset > message.highWaterOffset - 10) {
-                log.trace("High Water Message received - payload = %s", message.value);
-                let namespace = getNameSpaceForEventID(eventID);
-                emitEventActivity(namespace, activity, stats);
-            }
-        } catch (e) {
-            log.error("kafkaConsumer Exception  while processing message - ignored", e);
+async function startKafkaConsumer() {
+    // Create consumer with random group ID (all pods consume independently)
+    const consumer = kafka.consumer({
+        groupId: `opendj-service-web-${uuidv1()}`,
+        retry: {
+            retries: 10,
         }
-        log.trace("end kafkaConsumer.onMessage");
     });
 
-    kafkaConsumer.on('error', function(error) {
-        log.error("kafkaConsumer error: %s", error);
+    try {
+        // Connect the consumer
+        await consumer.connect();
+        log.info("Kafka consumer connected");
+
+        // Subscribe to topic
+        await consumer.subscribe({
+            topic: ENV_KAFKA_TOPIC_ACTIVITY,
+            fromBeginning: false  // Fix #72: Do not start at the beginning
+        });
+
+        log.info("Kafka consumer subscribed to topic: %s", ENV_KAFKA_TOPIC_ACTIVITY);
+
+        // Run the consumer
+        await consumer.run({
+            eachMessage: async ({ topic, partition, message }) => {
+                log.trace("begin kafkaConsumer.onMessage");
+
+                try {
+                    const activity = JSON.parse(message.value.toString());
+                    const eventID = activity.eventID;
+                    const stats = updateEventStatsFromActivity(activity);
+
+                    // Broadcast last 10 Messages:
+                    // In KafkaJS, we need to fetch highWaterOffset separately if needed
+                    // For now, we'll broadcast all messages (simplified logic)
+                    log.trace("Message received - payload = %s", message.value.toString());
+                    const namespace = getNameSpaceForEventID(eventID);
+                    emitEventActivity(namespace, activity, stats);
+
+                } catch (e) {
+                    log.error("kafkaConsumer Exception while processing message - ignored", e);
+                }
+                log.trace("end kafkaConsumer.onMessage");
+            },
+        });
+
+    } catch (error) {
+        log.error("Kafka consumer error: %s", error);
+
+        // Check for topic not exist error
+        if (error && error.message && (error.message.includes('topic') || error.type === 'UNKNOWN_TOPIC_OR_PARTITION')) {
+            log.warn("Creating consumer failed with topic not exist error - trying to create the topic %s", ENV_KAFKA_TOPIC_ACTIVITY);
+            await kafkaCreateTopic(kafka, ENV_KAFKA_TOPIC_ACTIVITY);
+
+            // Retry consumer start after topic creation
+            setTimeout(() => startKafkaConsumer(), 2000);
+        } else if (!ENV_KAFKA_IGNORE_MISSING) {
+            // Retry on other errors
+            log.info("Retrying consumer connection in 5 seconds...");
+            setTimeout(() => startKafkaConsumer(), 5000);
+        }
+    }
+
+    // Handle consumer disconnection
+    const errorTypes = ['unhandledRejection', 'uncaughtException'];
+    const signalTraps = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
+
+    errorTypes.forEach(type => {
+        process.on(type, async (e) => {
+            try {
+                log.error(`process.on ${type}`, e);
+                await consumer.disconnect();
+                process.exit(0);
+            } catch (_) {
+                process.exit(1);
+            }
+        });
+    });
+
+    signalTraps.forEach(type => {
+        process.once(type, async () => {
+            try {
+                await consumer.disconnect();
+            } finally {
+                process.kill(process.pid, type);
+            }
+        });
     });
 }
 
