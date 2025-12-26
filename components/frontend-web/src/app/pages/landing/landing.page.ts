@@ -75,7 +75,7 @@ Ask your host!`,
 
   }
 
-  hanndleSlideChange() {
+  handleSlideChange() {
     // console.log('Slide change');
     const value = this.swiper?.activeIndex || 0;
     // console.log(value);
@@ -90,7 +90,32 @@ Ask your host!`,
   }
 
   ngAfterViewInit() {
-    this.swiper = this.swiperRef?.nativeElement.swiper;
+    // Initialize Swiper
+    setTimeout(() => {
+      const swiperEl = this.swiperRef?.nativeElement;
+      if (swiperEl) {
+        // Set Swiper parameters
+        Object.assign(swiperEl, {
+          slidesPerView: 1,
+          spaceBetween: 0,
+          pagination: {
+            clickable: true,
+          },
+          // Enable touch/swipe
+          touchRatio: 1,
+          touchAngle: 45,
+          grabCursor: true,
+          // Enable keyboard control
+          keyboard: {
+            enabled: true,
+          },
+        });
+
+        // Initialize Swiper
+        swiperEl.initialize();
+        this.swiper = swiperEl.swiper;
+      }
+    }, 100);
   }
 
 }

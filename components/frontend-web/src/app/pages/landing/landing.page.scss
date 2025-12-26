@@ -4,8 +4,38 @@ ion-toolbar {
     --border-color: transparent;
 }
 
-.swiper-slide {
-    display: block;
+swiper-container {
+    width: 100%;
+    height: 100%;
+    --swiper-theme-color: #3880ff;
+    --swiper-pagination-color: #3880ff;
+}
+
+swiper-slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+// Ensure touch events work
+ion-content {
+    --overflow: hidden;
+}
+
+swiper-container::part(container) {
+    overflow: visible;
+}
+
+swiper-container::part(wrapper) {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
 }
 
 .slide-title {
