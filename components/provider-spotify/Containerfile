@@ -2,6 +2,9 @@
 # Using Red Hat UBI (Universal Base Image) - no rate limiting
 FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS builder
 
+# Switch to root to fix permission issues on Mac with podman machine
+USER root
+
 WORKDIR /app
 
 # Copy package files
@@ -15,6 +18,7 @@ RUN npm ci --only=production --ignore-scripts && \
 COPY app.js ./
 COPY genresSimplified.txt ./
 COPY trackSample.json ./
+COPY genreMap/genreMap.json ./genreMap/
 
 # Stage 2: Distroless runtime
 # Using Google's distroless image - no rate limiting
