@@ -1,41 +1,36 @@
-# Stage 1: Build the application
-FROM node:20-alpine AS builder
+# Stage 1: Build dependencies
+# Using Red Hat UBI (Universal Base Image) - no rate limiting
+FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS builder
+
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install --production
+
+# Install only production dependencies
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
 
 # Copy application source
-COPY . .
+COPY app.js ./
+COPY genresSimplified.txt ./
+COPY trackSample.json ./
 
-# Stage 2: Final Runtime
-# Note: 'scratch' is only possible if you use a fully static binary.
-# 'astj/static-node' provides these, or we use 'distroless' for safety.
-FROM gcr.io/distroless/nodejs20-debian12
+# Stage 2: Distroless runtime
+# Using Google's distroless image - no rate limiting
+FROM gcr.io/distroless/nodejs20-debian12:nonroot
+
 WORKDIR /app
 
-# Copy the production dependencies and source from the builder
+# Copy node_modules and application from builder
 COPY --from=builder /app /app
 
-# Run the application
-USER 1000
-EXPOSE 3000
-CMD ["index.js"]
+# Use non-root user (already set by :nonroot variant, UID 65532)
+# Expose default port
+EXPOSE 8081
 
+# Set NODE_ENV for production
+ENV NODE_ENV=production
 
-
-
-
------------
-    # Build stage: use builder variant to install dependencies and compile
-FROM quay.io/hummingbird/go:latest-builder AS builder
-RUN dnf install -y <build dependencies>
-COPY . /src
-WORKDIR /src
-RUN go build -o /app .
-
-# Runtime stage: use minimal base image for the compiled binary
-FROM quay.io/hummingbird/core-runtime:latest
-COPY --from=builder /app /app
-ENTRYPOINT ["/app"]
+# Run the application (app.js is the main entry point)
+CMD ["app.js"]
