@@ -6,9 +6,12 @@ name: provider-spotify
 # documentation.
 
 on:
-  schedule:
-    - cron: '15 6 * * *'
+#  schedule:
+#    - cron: '15 6 * * *'
   push:
+    paths:
+      - "components/provider-spotify**"
+
     branches: [ "master" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
