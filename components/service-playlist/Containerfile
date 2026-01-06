@@ -15,9 +15,9 @@ RUN npm ci --only=production --ignore-scripts && \
     npm cache clean --force
 
 # Copy application source
-#COPY server.js ./
-#COPY EventActivityClient.js ./
-COPY *.js ./
+COPY server.js ./
+COPY EventActivityClient.js ./
+#COPY *.js ./
 
 
 # Stage 2: Distroless runtime
