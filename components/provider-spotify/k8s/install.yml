@@ -19,6 +19,6 @@
     - name: Deploy provider-spotify manifest
       kubernetes.core.k8s:
         state: present
-        wait: false
+        wait: true
         kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
         definition: "{{ lookup('template', 'manifest.yml') | from_yaml }}"
