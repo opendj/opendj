@@ -71,7 +71,7 @@
               - annotations: null
                 from:
                   kind: DockerImage
-                  name: "{{ENV.COMMON.CONTAINER_IMAGE_EXTERNAL_REGISTRY}}/service-housekeeping:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                  name: "{{ENV.COMMON.CONTAINER_IMAGE_REGISTRY}}/service-housekeeping:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
                 generation: 2
                 importPolicy:
                   scheduled : true

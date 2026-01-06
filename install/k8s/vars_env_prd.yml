@@ -4,26 +4,35 @@
 # privileges where are not avail on employee openshift:
 specific:
   COMMON:
-    NAMESPACE: "dfroehli-opendj-uat"
-    DNS_BASENAME: "uat.opendj.io"
+    NAMESPACE: "dfroehli-opendj-prd"
+    DNS_BASENAME: "www.opendj.io"
     GIT:
       REF: "master"
     CONTAINER_IMAGE_BUILD: false
-    CONTAINER_IMAGE_TAG: "uat"
+    CONTAINER_IMAGE_TAG: "prd"
     CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
-    CONTAINER_IMAGE_EXTERNAL_REGISTRY: "quay.io/opendj"
+    CONTAINER_IMAGE_REGISTRY: "quay.io/opendj"
     STORAGE_CLASS_FILE: "managed-nfs-storage"
-  
+
+
+
+
+#  BACKEND_EVENTSTORE:
+#    KAFKA:
+#      OPERATOR_AVAILABLE: false
+#      TOPIC_CMD:  oc --namespace dfroehli-opendj-prd rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+ 
+
   PROVIDER_SPOTIFY:
-    LOG_LEVEL: "trace"
-    SPOTIFY_CALLBACK_URL: "http://uat.opendj.io/api/provider-spotify/v1/auth_callback"
-    REPLICAS: 1
+    LOG_LEVEL: "error"
+    SPOTIFY_CALLBACK_URL: "http://www.opendj.io/api/provider-spotify/v1/auth_callback"
+    REPLICAS: 2
 
   SERVICE_HOUSEKEEPING:
-    LOG_LEVEL: "debug"
+    LOG_LEVEL: "error"
 
   SERVICE_PLAYLIST:
-    LOG_LEVEL: "trace"
+    LOG_LEVEL: "error"
     TEST_EVENT_CREATE: "true"
     TEST_EVENT_ID: "demo"
     DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "false"
@@ -31,11 +40,11 @@ specific:
     MOCKUP_NO_ACTUAL_PLAYING: "false"
     MOCKUP_AUTOSKIP_SECONDS: "0"
     INTERNAL_POLL_INTERVAL: "5000"
-    REPLICAS: 1
+    REPLICAS: 2
 
   SERVICE_WEB:
-    LOG_LEVEL: "debug"
-    REPLICAS: 1
+    LOG_LEVEL: "error"
+    REPLICAS: 2
 
   SERVICE_EVENTACTIVITY:
     LOG_LEVEL: "ERROR"

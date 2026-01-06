@@ -12,16 +12,16 @@
 
 specific:
       COMMON:
-            GIT:
-                  REF: "master"
-#            NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
-            NPM_MIRROR_URL: ""
-            STORAGE_CLASS_FILE: "managed-nfs-storage"
+            CONTAINER_IMAGE_TAG: "master"
+            K8S_KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
 
 #      BACKEND_EVENTSTORE:
 #            KAFKA:
 #                  NUM_BROKERS: 2
 #                  NUM_ZOOKEPERS: 1
+
+      BACKEND_DATAGRID:
+            REPLICAS: 1
 
       PROVIDER_SPOTIFY:
             LOG_LEVEL: "trace"

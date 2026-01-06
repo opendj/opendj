@@ -6,20 +6,15 @@
 # Be sure to search for them and replace ALL occurences!
 common:
   COMMON:
-    NAMESPACE: "dfroehli-opendj-{{STAGE | mandatory}}"
+    NAMESPACE: "opendj-{{ STAGE | mandatory}}"
 # Remember to change Callback URL below, too:
     DNS_BASENAME: "{{STAGE}}.opendj.io"
-    GIT:
-      REF: "master"
-    CONTAINER_IMAGE_BUILD: true
     CONTAINER_IMAGE_TAG: "latest"
-    CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-{{STAGE}}"
-    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: false
-    CONTAINER_IMAGE_EXTERNAL_REGISTRY: "undefined"
-    QUAY_SECRET: "{{VAULT_QUAY_SECRET}}"
-    STORAGE_CLASS_FILE: "ocs-storagecluster-cephfs"
-#    MAVEN_MIRROR_URL: "http://nexus-oschneid-cluster-nexus.apps.ocp1.stormshift.coe.muc.redhat.com/repository/maven-public/"
-#    NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
+    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
+    CONTAINER_IMAGE_REGISTRY: "quay.io/opendj"
+    STORAGE_CLASS_FILE: "topolvm-provisioner"
+#    K8S_KUBECONFIG: "./secret_{{STAGE}}_kubeconfig.yml"
+    K8S_KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
 
   BACKEND_EVENTSTORE:
     DEPLOY: true
@@ -33,13 +28,12 @@ common:
 
   BACKEND_DATAGRID:
     DEPLOY: true
-    DEPLOY_WITH_TEMPLATE: false
-    DEPLOY_WITH_OPERATOR: true
     URL: "backend-datagrid:11222"
-    UNDEPLOY: false
     LIMIT_CPU: "1000m"
     LIMIT_MEMORY: "512Mi"
     STORAGE_SIZE: "1Gi"
+# Does not work due to string to int type mismatch:
+#    REPLICAS: 2
 
   PROVIDER_SPOTIFY:
     DEPLOY: true

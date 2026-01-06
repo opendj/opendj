@@ -148,4 +148,25 @@ nvm use 24
 npm start
 
 
+  # Build the image
+  cd /Users/dfroehli/RedHat/projects/OpenDJ/components/frontend-web
+  podman build -t opendj-frontend:latest -f Containerfile .
 
+  # Run locally
+  podman run -d -p 8080:80 --name opendj-frontend opendj-frontend:latest
+
+  # Access at http://localhost:8080
+
+  The nginx version is recommended for production use. Use the distroless version if you need maximum security and minimal attack surface.
+
+
+
+
+ podman run -d \
+    -p 8081:8081 \
+    -e DATAGRID_URL=host.containers.internal:11222 \
+    -e DATAGRID_USER=developer \
+    -e DATAGRID_PSWD=--secret-- \
+    -e LOG_LEVEL=info \
+    quay.io/opendj/provider-spotify:master
+    
