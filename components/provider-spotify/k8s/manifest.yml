@@ -1,0 +1,167 @@
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: spotify-api-credentials
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+  type: Opaque
+  stringData:
+    CLIENT_ID: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_ID }}"
+    CLIENT_SECRET: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_SECRET }}"
+ 
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: provider-spotify
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service
+      app.kubernetes.io/name: provider-spotify
+      app.kubernetes.io/part-of: service
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: provider-spotify
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    template:
+      metadata:
+        labels:
+          app: provider-spotify
+      spec:
+        containers:
+          - name: provider-spotify
+            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/provider-spotify:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+                name: web
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop: 
+                  - "ALL"
+            env:
+              - name: LOG_LEVEL
+                value: "{{ ENV.PROVIDER_SPOTIFY.LOG_LEVEL | default('info') }}"
+              - name: COMPRESS_RESULT
+                value: "true"
+              - name: PORT
+                value: "8080"
+              - name: DATAGRID_URL
+                value: "{{ ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222') }}"
+              - name: SPOTIFY_CALLBACK_URL
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_CALLBACK_URL }}"
+              - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_INTERVAL | default('60000') }}"
+              - name: SPOTIFY_REFRESH_TOKEN_OFFSET
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET | default('300000') }}"
+              - name: SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM | default('180000') }}"
+              - name: SPOTIFY_TRACK_DETAIL_NUM_GENRES
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_TRACK_DETAIL_NUM_GENRES | default('1') }}"
+              - name: SPOTIFY_TRACK_DETAIL_NUM_ARTISTS
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_TRACK_DETAIL_NUM_ARTISTS | default('1') }}"
+              - name: SPOTIFY_SEARCH_LIMIT
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_SEARCH_LIMIT | default('20') }}"
+              - name: SPOTIFY_AUTOSELECT_DEVICE
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_AUTOSELECT_DEVICE | default('true') }}"
+              - name: SPOTIFY_RETRIES
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRIES | default('1') }}"
+              - name: SPOTIFY_RETRY_TIMEOUT_MIN
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MIN | default('1000') }}"
+              - name: SPOTIFY_RETRY_TIMEOUT_MAX
+                value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MAX | default('1000') }}"
+              - name: PLAYLIST_PROVIDER_URL
+                value: "{{ ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8081/api/service-playlist/v1/') }}"
+              - name: MAX_PLAY_ERRORS
+                value: "{{ ENV.PROVIDER_SPOTIFY.MAX_PLAY_ERRORS | default('3') }}"
+            envFrom:
+              - prefix: SPOTIFY_
+                secretRef:
+                  name: spotify-api-credentials
+              - prefix: DATAGRID_
+                secretRef:
+                  name: backend-datagrid-credentials 
+            readinessProbe:
+              httpGet:
+                path: /api/provider-spotify/v1/ready
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            livenessProbe:
+              httpGet:
+                path: /api/provider-spotify/v1/health
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: provider-spotify
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: provider-spotify
+  spec:
+    type: ClusterIP
+    sessionAffinity: None
+    ports:
+      - name: web
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      app: provider-spotify
+
+- kind: Ingress
+  apiVersion: networking.k8s.io/v1
+  metadata:
+    name: provider-spotify
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: provider-spotify
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  spec:
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - "{{ ENV.COMMON.DNS_BASENAME }}"
+        secretName: provider-spotify-tls
+    rules:
+      - host: "{{ ENV.COMMON.DNS_BASENAME }}"
+        http:
+          paths:
+            - path: /api/provider-spotify
+              pathType: Prefix
+              backend:
+                service:
+                  name: provider-spotify
+                  port:
+                    name: web

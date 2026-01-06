@@ -1,0 +1,24 @@
+---
+- name: Install provider-spotify
+  gather_facts: false
+  hosts: localhost
+  vars_files:
+    - ../../../install/k8s/vars_secrets.yml
+    - ../../../install/k8s/vars_common.yml
+    - ../../../install/k8s/vars_env_{{ STAGE }}.yml
+  tasks:
+    - name: "Combine env facts"
+      tags: always
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.PROVIDER_SPOTIFY.DEPLOY
+
+    - name: Deploy provider-spotify manifest
+      kubernetes.core.k8s:
+        state: present
+        wait: false
+        kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
+        definition: "{{ lookup('template', 'manifest.yml') | from_yaml }}"
