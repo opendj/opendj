@@ -1,1 +1,7 @@
 *.tgz
+node_modules/
+tmp/
+
+#System Files
+.DS_Store
+Thumbs.db
