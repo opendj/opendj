@@ -1,0 +1,156 @@
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: service-playlist
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service
+      app.kubernetes.io/name: service-playlist
+      app.kubernetes.io/part-of: service
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: service-playlist
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    template:
+      metadata:
+        labels:
+          app: service-playlist
+      spec:
+        containers:
+          - name: service-playlist
+            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/service-playlist:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+                name: web
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop:
+                  - "ALL"
+            env:
+              - name: LOG_LEVEL
+                value: "{{ ENV.SERVICE_PLAYLIST.LOG_LEVEL | default('info') }}"
+              - name: COMPRESS_RESULT
+                value: "true"
+              - name: PORT
+                value: "8080"
+              - name: DATAGRID_URL
+                value: "{{ ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222') }}"
+              - name: SPOTIFY_PROVIDER_URL
+                value: "{{ ENV.SERVICE_PLAYLIST.SPOTIFY_PROVIDER_URL | default('http://provider-spotify:8080/api/provider-spotify/v1/') }}"
+              - name: TRACKAI_PROVIDER_URL
+                value: "{{ ENV.SERVICE_PLAYLIST.TRACKAI_PROVIDER_URL | default('http://model-service:8080/predict') }}"
+              - name: EVENTACTIVITY_PROVIDER_URL
+                value: "{{ ENV.SERVICE_PLAYLIST.EVENTACTIVITY_PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/') }}"
+              - name: TEST_EVENT_CREATE
+                value: "{{ ENV.SERVICE_PLAYLIST.TEST_EVENT_CREATE | default('true') }}"
+              - name: TEST_EVENT_ID
+                value: "{{ ENV.SERVICE_PLAYLIST.TEST_EVENT_ID | default('demo') }}"
+              - name: DEFAULT_AUTOFILL_EMPTY_PLAYLIST
+                value: "{{ ENV.SERVICE_PLAYLIST.DEFAULT_AUTOFILL_EMPTY_PLAYLIST | default('true') }}"
+              - name: DEFAULT_IS_PLAYING
+                value: "{{ ENV.SERVICE_PLAYLIST.DEFAULT_IS_PLAYING | default('true') }}"
+              - name: DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST
+                value: "{{ ENV.SERVICE_PLAYLIST.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST | default('75') }}"
+              - name: DEFAULT_ALLOW_DUPLICATE_TRACKS
+                value: "{{ ENV.SERVICE_PLAYLIST.DEFAULT_ALLOW_DUPLICATE_TRACKS | default('false') }}"
+              - name: MOCKUP_AUTOSKIP_SECONDS
+                value: "{{ ENV.SERVICE_PLAYLIST.MOCKUP_AUTOSKIP_SECONDS | default('0') }}"
+              - name: MOCKUP_NO_ACTUAL_PLAYING
+                value: "{{ ENV.SERVICE_PLAYLIST.MOCKUP_NO_ACTUAL_PLAYING | default('false') }}"
+              - name: INTERNAL_POLL_INTERVAL
+                value: "{{ ENV.SERVICE_PLAYLIST.INTERNAL_POLL_INTERVAL | default('10000') }}"
+              - name: PAUSE_ON_PLAYERROR
+                value: "{{ ENV.SERVICE_PLAYLIST.PAUSE_ON_PLAYERROR | default('true') }}"
+              - name: EVENT_URL
+                value: "{{ ENV.SERVICE_PLAYLIST.EVENT_URL | default('localhost:8080') }}"
+            envFrom:
+              - prefix: DATAGRID_
+                secretRef:
+                  name: backend-datagrid-credentials
+            readinessProbe:
+              httpGet:
+                path: /api/service-playlist/v1/ready
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            livenessProbe:
+              httpGet:
+                path: /api/service-playlist/v1/health
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: service-playlist
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service-playlist
+  spec:
+    type: ClusterIP
+    sessionAffinity: None
+    ports:
+      - name: web
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      app: service-playlist
+
+- kind: Ingress
+  apiVersion: networking.k8s.io/v1
+  metadata:
+    name: service-playlist
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service-playlist
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  spec:
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - "{{ ENV.COMMON.DNS_BASENAME }}"
+        secretName: service-playlist-tls
+    rules:
+      - host: "{{ ENV.COMMON.DNS_BASENAME }}"
+        http:
+          paths:
+            - path: /api/service-playlist
+              pathType: Prefix
+              backend:
+                service:
+                  name: service-playlist
+                  port:
+                    name: web
