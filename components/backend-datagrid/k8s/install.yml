@@ -1,0 +1,41 @@
+---
+- name: Install backend-datagrid
+  gather_facts: false
+  hosts: localhost
+  vars_files:
+    - ../../../install/k8s/vars_secrets.yml
+    - ../../../install/k8s/vars_common.yml
+    - ../../../install/k8s/vars_env_{{ STAGE }}.yml
+  tasks:
+    - name: "Combine env facts"
+      tags: always
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
+        
+    - name: Deploy Datagrid with helm
+      when: ENV.BACKEND_DATAGRID.DEPLOY
+      kubernetes.core.helm:
+        name: backend-datagrid
+        state : present
+        chart_ref: infinispan
+        chart_repo_url: "https://charts.openshift.io/"
+        namespace: "{{ ENV.COMMON.NAMESPACE }}"
+        values: "{{ lookup('template', 'helmchart_values.yml') | from_yaml }}"
+        wait: true
+        kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
+
+    - name: Create datagrid credential secret
+      kubernetes.core.k8s:
+        state: present
+        wait: false
+        kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
+        definition: 
+          kind: Secret
+          apiVersion: v1
+          metadata:
+            name: backend-datagrid-credentials
+            namespace: opendj-dev
+          type: Opaque
+          data:
+            USER: b3BlbmRq
+            PSWD: LS1zZWNyZXQtLQ==

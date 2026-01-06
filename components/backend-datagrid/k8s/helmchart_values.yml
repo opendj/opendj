@@ -1,0 +1,20 @@
+# See https://github.com/infinispan/infinispan-helm-charts/blob/main/README.md 
+images:
+  server: quay.io/infinispan/server:15.2
+deploy:
+  container:
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "{{ ENV.BACKEND_DATAGRID.LIMIT_CPU }}"
+        memory: "{{ ENV.BACKEND_DATAGRID.LIMIT_MEMORY }}"
+    storage:
+      size: "{{ ENV.BACKEND_DATAGRID.STORAGE_SIZE }}"
+      storageClassName: "{{ ENV.COMMON.STORAGE_CLASS_FILE }}"
+  security:
+    batch: "user create opendj -p --secret-- -g admin"
+#  replicas: "{{ ENV.BACKEND_DATAGRID.REPLICAS | int }}"
+  replicas: 1
