@@ -29,7 +29,7 @@
 #- import_playbook: ../../components/backend-eventstore/openshift/install.yml
 - import_playbook: ../../components/provider-spotify/k8s/install.yml
 - import_playbook: ../../components/service-playlist/k8s/install.yml
-#- import_playbook: ../../components/service-web/openshift/install.yml
+- import_playbook: ../../components/service-web/k8s/install.yml
 #- import_playbook: ../../components/frontend-web/openshift/install.yml
 #- import_playbook: ../../components/service-eventactivity/openshift/install.yml
 #- import_playbook: ../../components/service-housekeeping/openshift/install.yml
