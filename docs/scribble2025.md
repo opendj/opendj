@@ -170,3 +170,24 @@ npm start
     -e LOG_LEVEL=info \
     quay.io/opendj/provider-spotify:master
     
+
+# Run on MicroShift
+need to prep USHIFT for IP V6, see:
+https://docs.redhat.com/en/documentation/red_hat_build_of_microshift/4.17/html/configuring/microshift-nw-ipv6-config#microshift-nw-ipv6-dual-stack-migrating-config_microshift-nw-ipv6-config
+
+# cat /etc/microshift/config.yaml
+dns:
+  baseDomain: opendj-dev
+network:
+  clusterNetwork:
+  - 10.42.0.0/16 
+  - fd01::/48  
+  serviceNetwork:
+  - 10.43.0.0/16
+  - fd02::/112  
+node:
+  nodeIP: 192.168.0.116
+  nodeIPv6: 2a02:8071:b585:8dc0::3b93
+
+
+

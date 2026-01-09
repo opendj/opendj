@@ -1,0 +1,147 @@
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: service-web
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service
+      app.kubernetes.io/name: service-web
+      app.kubernetes.io/part-of: service
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: service-web
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    template:
+      metadata:
+        labels:
+          app: service-web
+      spec:
+        containers:
+          - name: service-web
+            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/service-web:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+                name: web
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop:
+                  - "ALL"
+            env:
+              - name: LOG_LEVEL
+                value: "{{ ENV.SERVICE_WEB.LOG_LEVEL | default('info') }}"
+              - name: COMPRESS_RESULT
+                value: "true"
+              - name: PORT
+                value: "8080"
+              - name: DATAGRID_URL
+                value: "{{ ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222') }}"
+              - name: KAFKA_HOST
+                value: "{{ ENV.BACKEND_EVENTSTORE.KAFKA.HOST | default('backend-eventstore-kafka-bootstrap:9092') }}"
+              - name: topic
+                value: "{{ ENV.SERVICE_WEB.KAFKA_TOPIC_ACTIVITY | default('opendj.event.activity') }}"
+              - name: KAFKA_IGNORE_MISSING
+                value: "{{ ENV.SERVICE_WEB.KAFKA_IGNORE_MISSING | default('false') }}"
+              - name: KAFKA_TOPIC_NUM_PARTITIONS
+                value: "{{ ENV.BACKEND_EVENTSTORE.NUM_PARTITIONS | default('1') }}"
+              - name: TOPIC_REPLICATION_FACTOR
+                value: "{{ ENV.SERVICE_WEB.TOPIC_REPLICATION_FACTOR | default('1') }}"
+              - name: THROTTLE_EMITTER_PLAYLIST
+                value: "{{ ENV.SERVICE_WEB.THROTTLE_EMITTER_PLAYLIST | default('5000') }}"
+              - name: EMIT_ACTIVITY
+                value: "{{ ENV.SERVICE_EVENTACTIVITY.EMIT_ACTIVITY | default('true') }}"
+              - name: EVENTACTIVITY_PROVIDER_URL
+                value: "{{ ENV.SERVICE_EVENTACTIVITY.PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/') }}"
+            envFrom:
+              - prefix: DATAGRID_
+                secretRef:
+                  name: backend-datagrid-credentials
+            readinessProbe:
+              httpGet:
+                path: /api/service-web/v1/ready
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            livenessProbe:
+              httpGet:
+                path: /api/service-web/v1/health
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: service-web
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service-web
+  spec:
+    type: ClusterIP
+    sessionAffinity: None
+    ports:
+      - name: web
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      app: service-web
+
+- kind: Ingress
+  apiVersion: networking.k8s.io/v1
+  metadata:
+    name: service-web
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service-web
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/websocket-services: service-web
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  spec:
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - "{{ ENV.COMMON.DNS_BASENAME }}"
+        secretName: service-web-tls
+    rules:
+      - host: "{{ ENV.COMMON.DNS_BASENAME }}"
+        http:
+          paths:
+            - path: /api/service-web
+              pathType: Prefix
+              backend:
+                service:
+                  name: service-web
+                  port:
+                    name: web

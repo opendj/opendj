@@ -1,0 +1,125 @@
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: frontend-web
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: frontend
+      app.kubernetes.io/name: frontend-web
+      app.kubernetes.io/part-of: frontend
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: frontend-web
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    template:
+      metadata:
+        labels:
+          app: frontend-web
+      spec:
+        containers:
+          - name: frontend-web
+            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/frontend-web:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+                name: web
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop:
+                  - "ALL"
+            env:
+              - name: WEBSOCKET_HOST
+                value: "{{ ENV.FRONTEND_WEB.WEBSOCKET_HOST | default('') }}"
+              - name: API_HOST
+                value: "{{ ENV.FRONTEND_WEB.API_HOST | default('') }}"
+              - name: SERVER_TIMEOUT
+                value: "{{ ENV.FRONTEND_WEB.SERVER_TIMEOUT | default('5000') }}"
+              - name: SPOTIFY_CALLBACK_URL
+                value: "{{ ENV.FRONTEND_WEB.SPOTIFY_CALLBACK_URL }}"
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: frontend-web
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: frontend-web
+  spec:
+    type: ClusterIP
+    sessionAffinity: None
+    ports:
+      - name: web
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      app: frontend-web
+
+- kind: Ingress
+  apiVersion: networking.k8s.io/v1
+  metadata:
+    name: frontend-web
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: frontend-web
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /
+  spec:
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - "{{ ENV.COMMON.DNS_BASENAME }}"
+        secretName: frontend-web-tls
+    rules:
+      - host: "{{ ENV.COMMON.DNS_BASENAME }}"
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: frontend-web
+                  port:
+                    name: web

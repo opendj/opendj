@@ -15,6 +15,8 @@ common:
     STORAGE_CLASS_FILE: "topolvm-provisioner"
 #    K8S_KUBECONFIG: "./secret_{{STAGE}}_kubeconfig.yml"
     K8S_KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+    K8S_INGRESSCLASS: "openshift-ingress"
+    K8S_INGRESS_TLS_SECRET: "{{STAGE}}.opendj.io.tls"
 
   BACKEND_EVENTSTORE:
     DEPLOY: true

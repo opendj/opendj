@@ -129,6 +129,7 @@
       app: provider-spotify
   spec:
     type: ClusterIP
+    ipFamilyPolicy: PreferDualStack
     sessionAffinity: None
     ports:
       - name: web
@@ -145,15 +146,12 @@
     namespace: "{{ ENV.COMMON.NAMESPACE }}"
     labels:
       app: provider-spotify
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
   spec:
-    ingressClassName: nginx
-    tls:
-      - hosts:
-          - "{{ ENV.COMMON.DNS_BASENAME }}"
-        secretName: provider-spotify-tls
+    ingressClassName: "{{ ENV.COMMON.K8S_INGRESSCLASS }}"
+#    tls:
+#      - hosts:
+#          - "{{ ENV.COMMON.DNS_BASENAME }}"
+#        secretName: "{{ ENV.COMMON.K8S_INGRESS_TLS_SECRET }}"
     rules:
       - host: "{{ ENV.COMMON.DNS_BASENAME }}"
         http:

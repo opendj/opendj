@@ -119,6 +119,7 @@
   spec:
     type: ClusterIP
     sessionAffinity: None
+    ipFamilyPolicy: PreferDualStack
     ports:
       - name: web
         port: 8080
@@ -134,11 +135,8 @@
     namespace: "{{ ENV.COMMON.NAMESPACE }}"
     labels:
       app: service-playlist
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
   spec:
-    ingressClassName: nginx
+    ingressClassName: "{{ ENV.COMMON.K8S_INGRESSCLASS }}"
     tls:
       - hosts:
           - "{{ ENV.COMMON.DNS_BASENAME }}"
