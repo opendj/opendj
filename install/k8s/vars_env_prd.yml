@@ -4,18 +4,7 @@
 # privileges where are not avail on employee openshift:
 specific:
   COMMON:
-    NAMESPACE: "dfroehli-opendj-prd"
     DNS_BASENAME: "www.opendj.io"
-    GIT:
-      REF: "master"
-    CONTAINER_IMAGE_BUILD: false
-    CONTAINER_IMAGE_TAG: "prd"
-    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
-    CONTAINER_IMAGE_REGISTRY: "quay.io/opendj"
-    STORAGE_CLASS_FILE: "managed-nfs-storage"
-
-
-
 
 #  BACKEND_EVENTSTORE:
 #    KAFKA:

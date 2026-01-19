@@ -32,7 +32,7 @@
             resources:
               requests:
                 storage: 1Gi
-            storageClassName: "{{ ENV.COMMON.STORAGE_CLASS_FILE}}"
+            storageClassName: "{{ ENV.COMMON.K8S.STORAGE_CLASS_FILE}}"
 
     - name: Create ImageStreamTag
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
@@ -52,7 +52,7 @@
               local: false
 
     - name: Create ImageStreamTag for external Registry
-      when: ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
+      when: ENV.COMMON.CONTAINER.IMAGE_FROM_EXTERNAL_REGISTRY
       k8s:
         state: present
         wait: true
@@ -71,11 +71,11 @@
               - annotations: null
                 from:
                   kind: DockerImage
-                  name: "{{ENV.COMMON.CONTAINER_IMAGE_REGISTRY}}/service-housekeeping:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                  name: "{{ENV.COMMON.CONTAINER.IMAGE_REGISTRY}}/service-housekeeping:{{ENV.COMMON.CONTAINER.IMAGE_TAG}}"
                 generation: 2
                 importPolicy:
                   scheduled : true
-                name: "{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                name: "{{ENV.COMMON.CONTAINER.IMAGE_TAG}}"
                 referencePolicy:
                   type: Local
 
@@ -205,7 +205,7 @@
                     - service-housekeeping
                   from:
                     kind: ImageStreamTag
-                    name: 'service-housekeeping:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
+                    name: 'service-housekeeping:{{ENV.COMMON.CONTAINER.IMAGE_TAG}}'
                     namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE | mandatory}}"
                 type: ImageChange
               - type: ConfigChange

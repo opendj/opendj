@@ -24,7 +24,7 @@
       spec:
         containers:
           - name: service-web
-            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/service-web:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/service-web:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
             imagePullPolicy: IfNotPresent
             ports:
               - containerPort: 8080
@@ -106,6 +106,7 @@
       app: service-web
   spec:
     type: ClusterIP
+    ipFamilyPolicy: PreferDualStack
     sessionAffinity: None
     ports:
       - name: web
@@ -123,17 +124,12 @@
     labels:
       app: service-web
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/websocket-services: service-web
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   spec:
-    ingressClassName: nginx
+    ingressClassName: "{{ ENV.COMMON.K8S.INGRESSCLASS }}"
     tls:
       - hosts:
           - "{{ ENV.COMMON.DNS_BASENAME }}"
-        secretName: service-web-tls
+        secretName: "{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}"
     rules:
       - host: "{{ ENV.COMMON.DNS_BASENAME }}"
         http:

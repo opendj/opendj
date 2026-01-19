@@ -12,8 +12,10 @@
 
 specific:
       COMMON:
-            CONTAINER_IMAGE_TAG: "master"
-            K8S_KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+            CONTAINER:
+                  IMAGE_TAG: "master"
+            K8S:
+                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
 
 #      BACKEND_EVENTSTORE:
 #            KAFKA:

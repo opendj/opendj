@@ -32,7 +32,7 @@
             lookupPolicy:
               local: false
     - name: Create ImageStreamTag for external Registry
-      when: ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
+      when: ENV.COMMON.CONTAINER.IMAGE_FROM_EXTERNAL_REGISTRY
       k8s:
         state: present
         wait: true
@@ -51,11 +51,11 @@
               - annotations: null
                 from:
                   kind: DockerImage
-                  name: "{{ENV.COMMON.CONTAINER_IMAGE_REGISTRY}}/service-playlist:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                  name: "{{ENV.COMMON.CONTAINER.IMAGE_REGISTRY}}/service-playlist:{{ENV.COMMON.CONTAINER.IMAGE_TAG}}"
                 generation: 2
                 importPolicy:
                   scheduled : true
-                name: "{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                name: "{{ENV.COMMON.CONTAINER.IMAGE_TAG}}"
                 referencePolicy:
                   type: Local
 
@@ -222,7 +222,7 @@
                     - service-playlist
                   from:
                     kind: ImageStreamTag
-                    name: 'service-playlist:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
+                    name: 'service-playlist:{{ENV.COMMON.CONTAINER.IMAGE_TAG}}'
                     namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange

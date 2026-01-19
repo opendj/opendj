@@ -9,14 +9,21 @@ common:
     NAMESPACE: "opendj-{{ STAGE | mandatory}}"
 # Remember to change Callback URL below, too:
     DNS_BASENAME: "{{STAGE}}.opendj.io"
-    CONTAINER_IMAGE_TAG: "latest"
-    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
-    CONTAINER_IMAGE_REGISTRY: "quay.io/opendj"
-    STORAGE_CLASS_FILE: "topolvm-provisioner"
-#    K8S_KUBECONFIG: "./secret_{{STAGE}}_kubeconfig.yml"
-    K8S_KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
-    K8S_INGRESSCLASS: "openshift-ingress"
-    K8S_INGRESS_TLS_SECRET: "{{STAGE}}.opendj.io.tls"
+    CONTAINER:
+      IMAGE_TAG: "{{STAGE}}"
+      IMAGE_REGISTRY: "quay.io/opendj"
+    K8S:
+      KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+      INGRESSCLASS: "openshift-ingress"
+      STORAGE_CLASS_FILE: "topolvm-provisioner"
+      INGRESS_TLS_SECRET: "{{STAGE}}.opendj.io.tls"
+    CERTMGR:
+      DEPLOY: true
+      EMAIL: "daniel.froehlich@web.de"
+# For Non-PROD:
+#      SERVER: "https://acme-staging-v02.api.letsencrypt.org/directory"
+  # For PROD:
+      SERVER: "https://acme-v02.api.letsencrypt.org/directory"
 
   BACKEND_EVENTSTORE:
     DEPLOY: true

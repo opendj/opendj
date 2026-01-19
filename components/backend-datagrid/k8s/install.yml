@@ -22,13 +22,13 @@
         namespace: "{{ ENV.COMMON.NAMESPACE }}"
         values: "{{ lookup('template', 'helmchart_values.yml') | from_yaml }}"
         wait: true
-        kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
 
     - name: Create datagrid credential secret
       kubernetes.core.k8s:
         state: present
         wait: false
-        kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
         definition: 
           kind: Secret
           apiVersion: v1

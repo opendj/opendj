@@ -58,7 +58,7 @@
             - service-eventactivity-minimal
           from:
             kind: ImageStreamTag
-            name: 'service-eventactivity-minimal:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
+            name: 'service-eventactivity-minimal:{{ENV.COMMON.CONTAINER.IMAGE_TAG}}'
             namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE | mandatory}}"
         type: ImageChange
       - type: ConfigChange

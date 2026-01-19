@@ -1,12 +1,5 @@
 # Variables specific for DEV stage:
-
-
 specific:
-      COMMON:
-            CONTAINER_IMAGE_BUILD: false
-            CONTAINER_IMAGE_TAG: "tst"
-            CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-dev"
-
       SERVICE_PLAYLIST:
             LOG_LEVEL: "info"
             DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "false"

@@ -34,7 +34,7 @@
       spec:
         containers:
           - name: provider-spotify
-            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/provider-spotify:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/provider-spotify:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
             imagePullPolicy: IfNotPresent
             ports:
               - containerPort: 8080
@@ -147,11 +147,11 @@
     labels:
       app: provider-spotify
   spec:
-    ingressClassName: "{{ ENV.COMMON.K8S_INGRESSCLASS }}"
-#    tls:
-#      - hosts:
-#          - "{{ ENV.COMMON.DNS_BASENAME }}"
-#        secretName: "{{ ENV.COMMON.K8S_INGRESS_TLS_SECRET }}"
+    ingressClassName: "{{ ENV.COMMON.K8S.INGRESSCLASS }}"
+    tls:
+      - hosts:
+          - "{{ ENV.COMMON.DNS_BASENAME }}"
+        secretName: "{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}"
     rules:
       - host: "{{ ENV.COMMON.DNS_BASENAME }}"
         http:

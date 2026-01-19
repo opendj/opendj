@@ -1,0 +1,34 @@
+- apiVersion: cert-manager.io/v1
+  kind: Issuer
+  metadata:
+    name: letsencrypt
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+  spec:
+    acme:
+      # The ACME server URL
+      server: "{{ ENV.COMMON.CERTMGR.SERVER }}" 
+      # Email address used for ACME registration
+      email: "{{ ENV.COMMON.CERTMGR.EMAIL }}" 
+      # Name of a secret used to store the ACME account private key
+      privateKeySecretRef:
+        name: letsencrypt-account
+      # Enable the HTTP-01 challenge provider
+      solvers:
+      # An empty 'selector' means that this solver matches all domains
+      - selector: {}
+        http01:
+          ingress:
+            ingressClassName: "{{ ENV.COMMON.K8S.INGRESSCLASS }}" 
+
+- apiVersion: cert-manager.io/v1
+  kind: Certificate
+  metadata:
+    name: "{{ ENV.COMMON.NAMESPACE }}"
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+  spec:
+    secretName: "{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}"
+    issuerRef:
+      name: letsencrypt
+    commonName: "{{ ENV.COMMON.DNS_BASENAME }}"
+    dnsNames:
+    - "{{ ENV.COMMON.DNS_BASENAME }}"

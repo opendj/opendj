@@ -1,3 +1,20 @@
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+      name: frontend-web-config-map
+      namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  data:
+      config.json: |-
+          {
+          "websocketHost": "{{ENV.FRONTEND_WEB.WEBSOCKET_HOST | default('http://{{STAGE}}.opendj.io')}}" ,
+          "websocketPath": "/api/service-web/socket",
+          "SPOTIFY_PROVIDER_API": "{{ENV.FRONTEND_WEB.API_HOST | default('')}}/api/provider-spotify/v1" ,
+          "PLAYLIST_PROVIDER_API": "{{ENV.FRONTEND_WEB.API_HOST | default('')}}/api/service-playlist/v1",
+          "WEB_PROVIDER_API": "{{ENV.FRONTEND_WEB.API_HOST | default('')}}/api/service-web/v1",
+          "SERVER_TIMEOUT": "{{ENV.FRONTEND_WEB.SERVER_TIMEOUT | default('7500')}}",
+          "HELP_PAGE_URL": "https://github.com/opendj/opendj-docs/wiki/userguide"
+          }
+
 - kind: Deployment
   apiVersion: apps/v1
   metadata:
@@ -24,8 +41,12 @@
       spec:
         containers:
           - name: frontend-web
-            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/frontend-web:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/frontend-web:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
             imagePullPolicy: IfNotPresent
+            volumeMounts:
+              - mountPath: /var/www/html/conf/config.json
+                name: volume-cfgmap
+                subPath: config.json
             ports:
               - containerPort: 8080
                 protocol: TCP
@@ -38,15 +59,6 @@
               capabilities:
                 drop:
                   - "ALL"
-            env:
-              - name: WEBSOCKET_HOST
-                value: "{{ ENV.FRONTEND_WEB.WEBSOCKET_HOST | default('') }}"
-              - name: API_HOST
-                value: "{{ ENV.FRONTEND_WEB.API_HOST | default('') }}"
-              - name: SERVER_TIMEOUT
-                value: "{{ ENV.FRONTEND_WEB.SERVER_TIMEOUT | default('5000') }}"
-              - name: SPOTIFY_CALLBACK_URL
-                value: "{{ ENV.FRONTEND_WEB.SPOTIFY_CALLBACK_URL }}"
             readinessProbe:
               httpGet:
                 path: /health
@@ -75,8 +87,12 @@
             terminationMessagePolicy: File
         dnsPolicy: ClusterFirst
         restartPolicy: Always
-        terminationGracePeriodSeconds: 30
-
+        terminationGracePeriodSeconds: 30 
+        volumes:
+          - name: volume-cfgmap
+            configMap:
+              defaultMode: 438
+              name: frontend-web-config-map
 - kind: Service
   apiVersion: v1
   metadata:
@@ -86,6 +102,7 @@
       app: frontend-web
   spec:
     type: ClusterIP
+    ipFamilyPolicy: PreferDualStack
     sessionAffinity: None
     ports:
       - name: web
@@ -102,16 +119,12 @@
     namespace: "{{ ENV.COMMON.NAMESPACE }}"
     labels:
       app: frontend-web
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /
   spec:
-    ingressClassName: nginx
+    ingressClassName:  "{{ ENV.COMMON.K8S.INGRESSCLASS }}"
     tls:
       - hosts:
           - "{{ ENV.COMMON.DNS_BASENAME }}"
-        secretName: frontend-web-tls
+        secretName: "{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}"
     rules:
       - host: "{{ ENV.COMMON.DNS_BASENAME }}"
         http:

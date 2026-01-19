@@ -2,18 +2,7 @@
 # with ACME Certs
 # frontend used artifact image, because runtime image requires root
 # privileges where are not avail on employee openshift:
-specific:
-  COMMON:
-    NAMESPACE: "dfroehli-opendj-uat"
-    DNS_BASENAME: "uat.opendj.io"
-    GIT:
-      REF: "master"
-    CONTAINER_IMAGE_BUILD: false
-    CONTAINER_IMAGE_TAG: "uat"
-    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
-    CONTAINER_IMAGE_REGISTRY: "quay.io/opendj"
-    STORAGE_CLASS_FILE: "managed-nfs-storage"
-  
+specific:  
   PROVIDER_SPOTIFY:
     LOG_LEVEL: "trace"
     SPOTIFY_CALLBACK_URL: "http://uat.opendj.io/api/provider-spotify/v1/auth_callback"

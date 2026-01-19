@@ -14,22 +14,30 @@
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
 
-    - name: Create namespace 
+    - name: Apply base manifest
       tags: prj
       k8s:
         state: present
-        kubeconfig: "{{ ENV.COMMON.K8S_KUBECONFIG }}"
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
         wait: true
-        definition:
-          kind: Namespace
-          metadata:
-            name: "{{ ENV.COMMON.NAMESPACE|mandatory }}"
-              
+        definition: "{{ lookup('template', 'manifest.yml') | from_yaml }}"
+
+    - name: Create TLS cert via cert-mgr
+      when: ENV.COMMON.CERTMGR.DEPLOY
+      tags: certmgr
+      block:
+        - name: Apply certmgr manifest
+          k8s:
+            state: present
+            kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+            wait: true
+            definition: "{{ lookup('template', 'manifest_certmgr.yml') | from_yaml }}"
+
 - import_playbook: ../../components/backend-datagrid/k8s/install.yml
-#- import_playbook: ../../components/backend-eventstore/openshift/install.yml
+#- import_playbook: ../../components/backend-eventstore/k8s/install.yml
 - import_playbook: ../../components/provider-spotify/k8s/install.yml
 - import_playbook: ../../components/service-playlist/k8s/install.yml
 - import_playbook: ../../components/service-web/k8s/install.yml
-#- import_playbook: ../../components/frontend-web/openshift/install.yml
-#- import_playbook: ../../components/service-eventactivity/openshift/install.yml
-#- import_playbook: ../../components/service-housekeeping/openshift/install.yml
+- import_playbook: ../../components/frontend-web/k8s/install.yml
+#- import_playbook: ../../components/service-eventactivity/k8s/install.yml
+#- import_playbook: ../../components/service-housekeeping/k8s/install.yml

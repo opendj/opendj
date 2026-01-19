@@ -24,7 +24,7 @@
       spec:
         containers:
           - name: service-playlist
-            image: "{{ ENV.COMMON.CONTAINER_IMAGE_REGISTRY }}/service-playlist:{{ ENV.COMMON.CONTAINER_IMAGE_TAG }}"
+            image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/service-playlist:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
             imagePullPolicy: IfNotPresent
             ports:
               - containerPort: 8080
@@ -136,11 +136,11 @@
     labels:
       app: service-playlist
   spec:
-    ingressClassName: "{{ ENV.COMMON.K8S_INGRESSCLASS }}"
+    ingressClassName: "{{ ENV.COMMON.K8S.INGRESSCLASS }}"
     tls:
       - hosts:
           - "{{ ENV.COMMON.DNS_BASENAME }}"
-        secretName: service-playlist-tls
+        secretName: "{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}"
     rules:
       - host: "{{ ENV.COMMON.DNS_BASENAME }}"
         http:

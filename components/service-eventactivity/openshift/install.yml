@@ -48,7 +48,7 @@
         definition: "{{ (lookup('template', 'definitionsForImageBuild.yml') | from_yaml_all | list)[0] }}"
 
     - name: Create definitions for external image
-      when: ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
+      when: ENV.COMMON.CONTAINER.IMAGE_FROM_EXTERNAL_REGISTRY
       k8s:
         state: present
         wait: true

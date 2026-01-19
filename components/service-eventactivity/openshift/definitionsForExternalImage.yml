@@ -12,10 +12,10 @@
       - annotations: null
         from:
           kind: DockerImage
-          name: "{{ENV.COMMON.CONTAINER_IMAGE_REGISTRY}}/service-eventactivity:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+          name: "{{ENV.COMMON.CONTAINER.IMAGE_REGISTRY}}/service-eventactivity:{{ENV.COMMON.CONTAINER.IMAGE_TAG}}"
         generation: 2
         importPolicy:
           scheduled : true
-        name: "{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+        name: "{{ENV.COMMON.CONTAINER.IMAGE_TAG}}"
         referencePolicy:
           type: Local

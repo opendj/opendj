@@ -13,7 +13,7 @@ deploy:
         memory: "{{ ENV.BACKEND_DATAGRID.LIMIT_MEMORY }}"
     storage:
       size: "{{ ENV.BACKEND_DATAGRID.STORAGE_SIZE }}"
-      storageClassName: "{{ ENV.COMMON.STORAGE_CLASS_FILE }}"
+      storageClassName: "{{ ENV.COMMON.K8S.STORAGE_CLASS_FILE }}"
   security:
     batch: "user create opendj -p --secret-- -g admin"
 #  replicas: "{{ ENV.BACKEND_DATAGRID.REPLICAS | int }}"
