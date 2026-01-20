@@ -47,7 +47,7 @@ common:
 
   PROVIDER_SPOTIFY:
     DEPLOY: true
-    SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
+    SPOTIFY_CALLBACK_URL: "https://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     SPOTIFY_CLIENT_ID: "{{VAULT_SPOTIFY_CLIENT_ID}}"
     SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
 
@@ -74,5 +74,5 @@ common:
     API_HOST: ""
     SERVER_TIMEOUT: "5000"
     INSECURE_EDGE_TERMINATION: "Allow"
-    SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
+    SPOTIFY_CALLBACK_URL: "https://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     USE_RUNTIME_IMAGE: true

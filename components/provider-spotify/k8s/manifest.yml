@@ -80,7 +80,7 @@
               - name: SPOTIFY_RETRY_TIMEOUT_MAX
                 value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MAX | default('1000') }}"
               - name: PLAYLIST_PROVIDER_URL
-                value: "{{ ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8081/api/service-playlist/v1/') }}"
+                value: "{{ ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8080/api/service-playlist/v1/') }}"
               - name: MAX_PLAY_ERRORS
                 value: "{{ ENV.PROVIDER_SPOTIFY.MAX_PLAY_ERRORS | default('3') }}"
             envFrom:

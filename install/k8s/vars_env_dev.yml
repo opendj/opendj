@@ -45,4 +45,3 @@ specific:
 
       FRONTEND_WEB:
             REPLICAS: 1
-            WEBSOCKET_HOST: "XXX.YYY"

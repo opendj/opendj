@@ -43,10 +43,10 @@
           - name: frontend-web
             image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/frontend-web:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
             imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
-            volumeMounts:             
+            volumeMounts:                        
               - mountPath: /usr/share/nginx/html/conf
                 name: volume-cfgmap
-                subPath: config.json
+#                subPath: config.json
             ports:
               - containerPort: 8080
                 protocol: TCP
@@ -91,7 +91,7 @@
         volumes:
           - name: volume-cfgmap
             configMap:
-              defaultMode: 438
+#              defaultMode: 438
               name: frontend-web
 - kind: Service
   apiVersion: v1
