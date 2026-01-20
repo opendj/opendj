@@ -15,8 +15,8 @@ COPY package*.json ./
 # Install dependencies with legacy peer deps flag
 RUN npm ci --legacy-peer-deps
 
-# Copy source code
-COPY . .
+# Copy source code (excluding conf folder - this will be provided by a ConfigMap)
+COPY --exclude=src/conf . . 
 
 # Build the Angular app for production
 RUN npm run build
