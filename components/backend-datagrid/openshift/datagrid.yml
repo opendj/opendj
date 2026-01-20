@@ -130,7 +130,7 @@
           - name: USER_CONFIG_MAP
             value: "true"
           image: registry.redhat.io/jboss-datagrid-7/datagrid73-openshift:1.4
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
           livenessProbe:
             exec:
               command:

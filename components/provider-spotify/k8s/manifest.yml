@@ -35,7 +35,7 @@
         containers:
           - name: provider-spotify
             image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/provider-spotify:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
-            imagePullPolicy: IfNotPresent
+            imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
             ports:
               - containerPort: 8080
                 protocol: TCP

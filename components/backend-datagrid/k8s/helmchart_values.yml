@@ -3,7 +3,7 @@ images:
   server: quay.io/infinispan/server:15.2
 deploy:
   container:
-    imagePullPolicy: IfNotPresent
+    imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
     resources:
       requests:
         cpu: "100m"

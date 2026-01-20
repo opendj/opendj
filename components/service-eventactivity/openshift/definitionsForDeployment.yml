@@ -34,7 +34,7 @@
                 value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST}}"
               - name: "quarkus.http.port"
                 value: "8080"
-            imagePullPolicy: IfNotPresent
+            imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
             name: service-eventactivity-minimal
             resources:
               limits:

@@ -168,7 +168,7 @@
                       - prefix: DATAGRID_
                         secretRef:
                           name: backend-datagrid-credentials
-                    imagePullPolicy: IfNotPresent
+                    imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
                     name: service-web
                     ports:
                       - containerPort: 8080

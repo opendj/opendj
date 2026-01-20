@@ -85,7 +85,7 @@
                   app: hub
               spec:
                 containers:
-                  - imagePullPolicy: IfNotPresent
+                  - imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
                     name: hub
                     ports:
                       - containerPort: 4444
@@ -213,7 +213,7 @@
                   app: node-chrome
               spec:
                 containers:
-                  - imagePullPolicy: IfNotPresent
+                  - imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
                     name: node-chrome
                     ports:
                       - containerPort: 5555
@@ -298,7 +298,7 @@
                   app: node-firefox
               spec:
                 containers:
-                  - imagePullPolicy: IfNotPresent
+                  - imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
                     name: node-firefox
                     ports:
                       - containerPort: 5555

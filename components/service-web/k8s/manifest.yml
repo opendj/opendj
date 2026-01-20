@@ -25,7 +25,7 @@
         containers:
           - name: service-web
             image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/service-web:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
-            imagePullPolicy: IfNotPresent
+            imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
             ports:
               - containerPort: 8080
                 protocol: TCP

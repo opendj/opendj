@@ -14,6 +14,8 @@ specific:
       COMMON:
             CONTAINER:
                   IMAGE_TAG: "master"
+                  PULL_POLICY: Always
+
             K8S:
                   KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
 

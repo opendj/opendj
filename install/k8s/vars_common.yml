@@ -12,6 +12,7 @@ common:
     CONTAINER:
       IMAGE_TAG: "{{STAGE}}"
       IMAGE_REGISTRY: "quay.io/opendj"
+      PULL_POLICY: IfNotPresent
     K8S:
       KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
       INGRESSCLASS: "openshift-ingress"

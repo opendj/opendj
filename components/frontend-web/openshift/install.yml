@@ -302,7 +302,7 @@
               spec:
                 containers:
                   - env:
-                    imagePullPolicy: IfNotPresent
+                    imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
                     name: frontend-web
                     ports:
                       - containerPort: 8080

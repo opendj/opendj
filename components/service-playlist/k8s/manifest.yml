@@ -25,7 +25,7 @@
         containers:
           - name: service-playlist
             image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/service-playlist:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
-            imagePullPolicy: IfNotPresent
+            imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
             ports:
               - containerPort: 8080
                 protocol: TCP

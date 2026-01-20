@@ -21,6 +21,9 @@ COPY --exclude=src/conf . .
 # Build the Angular app for production
 RUN npm run build
 
+# Make Directory for Config:
+RUN mkdir -p /app/www/conf
+
 # -----------------------------------------------------------------------------
 # Stage 2: Production runtime with nginx (minimal image)
 # -----------------------------------------------------------------------------
@@ -31,8 +34,6 @@ LABEL maintainer="OpenDJ"
 LABEL description="OpenDJ Frontend Web Application"
 LABEL org.opencontainers.image.source="https://github.com/opendj/opendj"
 
-# Make Directory for Config:
-RUN mkdir -p /usr/share/nginx/html/conf
 
 # Copy custom nginx configuration for SPA routing
 COPY nginx.conf /etc/nginx/nginx.conf
