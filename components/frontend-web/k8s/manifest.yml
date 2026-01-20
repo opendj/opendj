@@ -42,9 +42,9 @@
         containers:
           - name: frontend-web
             image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/frontend-web:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
-            imagePullPolicy: IfNotPresent
-            volumeMounts:
-              - mountPath: /var/www/html/conf/config.json
+            imagePullPolicy: Always
+            volumeMounts:             
+              - mountPath: /usr/share/nginx/html/conf
                 name: volume-cfgmap
                 subPath: config.json
             ports:
