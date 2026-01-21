@@ -39,3 +39,15 @@
           data:
             USER: b3BlbmRq
             PSWD: LS1zZWNyZXQtLQ==
+
+    - name: Wait for datagrid pod to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+        kind: Pod
+        namespace: "{{ ENV.COMMON.NAMESPACE }}"
+        name: backend-datagrid-0
+        wait: yes
+        wait_timeout: 300
+        wait_condition:
+          type: Ready
+          status: True

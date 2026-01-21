@@ -1,0 +1,38 @@
+---
+- name: Install backend-eventstore
+  gather_facts: false
+  hosts: localhost
+  vars_files:
+    - ../../../install/k8s/vars_secrets.yml
+    - ../../../install/k8s/vars_common.yml
+    - ../../../install/k8s/vars_env_{{ STAGE }}.yml
+  tasks:
+    - name: "Combine env facts"
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.BACKEND_EVENTSTORE.DEPLOY
+
+    - name: Deploy Kafka via Operator
+      kubernetes.core.k8s:
+        state: present
+        wait: true
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+        definition: "{{ lookup('template', 'manifest.yml') | from_yaml }}"
+
+    - name: Wait for broker pod to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+        kind: Pod
+        namespace: "{{ ENV.COMMON.NAMESPACE }}"
+        name: backend-eventstore-dual-role-0
+#        label_selectors:
+#          - "key = value"
+        wait: yes
+        wait_timeout: 300
+        wait_condition:
+          type: Ready
+          status: True
+
