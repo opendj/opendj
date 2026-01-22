@@ -1,4 +1,28 @@
-*
+# Ignore build output (will be rebuilt in container)
+target/
 !target/*-runner
 !target/*-runner.jar
 !target/lib/*
+
+# Ignore IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+.factorypath
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore container files
+Containerfile*
+Dockerfile*
+.dockerignore
+
+# Ignore documentation
+README.md
+*.md
+
+# Ignore sample files
+sample.json
