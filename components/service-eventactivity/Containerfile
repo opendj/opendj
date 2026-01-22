@@ -11,9 +11,10 @@
 ####
 
 # Stage 1: Build the application
-FROM registry.access.redhat.com/ubi8/openjdk-11:latest AS builder
+FROM registry.access.redhat.com/ubi8/openjdk-8:latest AS builder
 
 USER root
+WORKDIR /build
 
 # Copy Maven wrapper and pom.xml first for better layer caching
 COPY mvnw mvnw.cmd pom.xml ./
@@ -29,16 +30,17 @@ COPY src src
 RUN ./mvnw package -DskipTests -B
 
 # Stage 2: Create minimal runtime image
-FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:latest
+FROM registry.access.redhat.com/ubi8/openjdk-8-runtime:latest
 
 ENV LANGUAGE='en_US:en'
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV AB_ENABLED=jmx_exporter
 
 # Copy the application from builder stage
-COPY --from=builder --chown=185 /home/jboss/target/lib/* /deployments/lib/
-COPY --from=builder --chown=185 /home/jboss/target/*-runner.jar /deployments/app.jar
+COPY --from=builder --chown=185 /build/target/lib/* /deployments/lib/
+COPY --from=builder --chown=185 /build/target/*-runner.jar /deployments/app.jar
 
 EXPOSE 8080
 USER 185
 
-ENTRYPOINT ["java", "-jar", "/deployments/app.jar"]
+ENTRYPOINT ["/opt/jboss/container/java/run/run-java.sh"]
