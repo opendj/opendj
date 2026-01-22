@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+*.md
+test
+coverage
+.nyc_output
+*.log
+.DS_Store
+Containerfile
+Dockerfile
+.dockerignore
+openshift
+.openshiftio

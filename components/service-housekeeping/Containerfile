@@ -1,0 +1,34 @@
+# Stage 1: Build dependencies
+# Using Red Hat UBI (Universal Base Image) - no rate limiting
+FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS builder
+
+# Switch to root to fix permission issues on Mac with podman machine
+USER root
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
+
+# Copy application source
+COPY *.js ./
+
+
+# Stage 2: Distroless runtime
+# Using Google's distroless image - no rate limiting
+FROM gcr.io/distroless/nodejs20-debian12:nonroot
+
+WORKDIR /app
+
+# Copy node_modules and application from builder
+COPY --from=builder /app /app
+
+# Set NODE_ENV for production
+ENV NODE_ENV=production
+
+# Run the application 
+CMD ["housekeeper.js"]
