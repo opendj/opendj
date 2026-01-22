@@ -1,0 +1,85 @@
+
+# Create PVC for event export
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: service-housekeeping-event-export
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: "{{ ENV.COMMON.K8S.STORAGE_CLASS_FILE}}"
+
+
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: service-housekeeping
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service
+      app.kubernetes.io/name: service-housekeeping
+      app.kubernetes.io/part-of: service
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: service-housekeeping
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    template:
+      metadata:
+        labels:
+          app: service-housekeeping
+      spec:
+        containers:
+          - name: service-housekeeping
+            image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/service-housekeeping:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
+            imagePullPolicy: {{ ENV.COMMON.CONTAINER.PULL_POLICY }}
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+                name: web
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop:
+                  - "ALL"
+            env:
+              - name: LOG_LEVEL
+                value: "{{ENV.SERVICE_HOUSEKEEPING.LOG_LEVEL | default('info')}}"
+              - name: EVENT_STORAGE
+                value: "{{ENV.SERVICE_HOUSEKEEPING.EVENT_STORAGE | default('/data')}}"
+              - name: CRONTAB
+                value: "{{ENV.SERVICE_HOUSEKEEPING.CRONTAB | default('0,30 * * * * *')}}"
+              - name: DATAGRID_URL
+                value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}"
+            envFrom:
+              - prefix: DATAGRID_
+                secretRef:
+                  name: backend-datagrid-credentials
+            volumeMounts:
+              - mountPath: /data
+                name: volume-data
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        volumes:
+          - name: volume-data
+            persistentVolumeClaim:
+              claimName: service-housekeeping-event-export
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
