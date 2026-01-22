@@ -10,7 +10,7 @@ const { Kafka, logLevel } = require('kafkajs');
 const { v1: uuidv1 } = require('uuid');
 
 const eventActivityClient = require('./EventActivityClient');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8083;
 const ENV_THROTTLE_EMITTER_PLAYLIST = parseInt(process.env.THROTTLE_EMITTER_PLAYLIST || '1000');
 const ENV_EMIT_ACTIVITY = (process.env.EMIT_ACTIVITY || 'true') == 'true';
 

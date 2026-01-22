@@ -1865,7 +1865,7 @@ async function createCache(name) {
 async function connectToGrid(name) {
     let grid = null;
     try {
-        log.debug("begin connectToCache %s", name);
+        log.debug("begin connectToGrid %s", name);
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
@@ -1884,6 +1884,7 @@ async function connectToGrid(name) {
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);
     } catch (err) {
+        log.error(err);
         if ((""+err).includes("CacheNotFoundException")) {
           await createCache(name);
           grid = connectToGrid(name);
@@ -1898,12 +1899,17 @@ async function connectToGrid(name) {
 }
 
 async function getFromGrid(grid, key) {
+    let val = null;
     try {
-        let val = await grid.get(key);
-        if (val)
+        val = await grid.get(key);
+        if (val) {
             val = JSON.parse(val);
+        }
         return val;
     } catch (err) {
+        log.error("!!! getFromGrid failed with error="+err);
+        log.error("value from grid="+val);
+        log.error(val);
         handleGridError(grid, err);
         throw err;
     }
@@ -2024,7 +2030,7 @@ setImmediate(async function() {
 
         if (TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(TEST_EVENT_ID);
-            //            testEvent = null;
+            testEvent = null;
             if (testEvent) {
                 log.debug("Test event already present");
             } else {
