@@ -1,0 +1,44 @@
+####
+# Multi-stage Containerfile for Quarkus service-eventactivity
+# Uses Red Hat UBI images (no rate limits)
+#
+# Build the image with:
+#   podman build -f Containerfile -t quarkus/service-eventactivity:latest .
+#
+# Run the container:
+#   podman run -i --rm -p 8080:8080 quarkus/service-eventactivity:latest
+#
+####
+
+# Stage 1: Build the application
+FROM registry.access.redhat.com/ubi8/openjdk-11:latest AS builder
+
+USER root
+
+# Copy Maven wrapper and pom.xml first for better layer caching
+COPY mvnw mvnw.cmd pom.xml ./
+COPY .mvn .mvn
+
+# Download dependencies (cached layer if pom.xml doesn't change)
+RUN ./mvnw dependency:go-offline -B
+
+# Copy source code
+COPY src src
+
+# Build the application
+RUN ./mvnw package -DskipTests -B
+
+# Stage 2: Create minimal runtime image
+FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:latest
+
+ENV LANGUAGE='en_US:en'
+ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+
+# Copy the application from builder stage
+COPY --from=builder --chown=185 /home/jboss/target/lib/* /deployments/lib/
+COPY --from=builder --chown=185 /home/jboss/target/*-runner.jar /deployments/app.jar
+
+EXPOSE 8080
+USER 185
+
+ENTRYPOINT ["java", "-jar", "/deployments/app.jar"]
