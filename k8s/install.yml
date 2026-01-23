@@ -27,7 +27,7 @@
         state: present
         kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
         wait: true
-        definition: "{{ lookup('template', '../../secret_{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}') | from_yaml }}"
+        definition: "{{ lookup('template', '../secret_{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}') | from_yaml }}"
 
     - name: Create TLS cert via cert-mgr
       when: ENV.COMMON.CERTMGR.DEPLOY
@@ -40,11 +40,11 @@
             wait: true
             definition: "{{ lookup('template', 'manifest_certmgr.yml') | from_yaml }}"
 
-- import_playbook: ../../components/backend-datagrid/k8s/install.yml
-- import_playbook: ../../components/backend-eventstore/k8s/install.yml
-- import_playbook: ../../components/provider-spotify/k8s/install.yml
-- import_playbook: ../../components/service-playlist/k8s/install.yml
-- import_playbook: ../../components/service-web/k8s/install.yml
-- import_playbook: ../../components/frontend-web/k8s/install.yml
-- import_playbook: ../../components/service-eventactivity/k8s/install.yml
-- import_playbook: ../../components/service-housekeeping/k8s/install.yml
+- import_playbook: ../components/backend-datagrid/k8s/install.yml
+- import_playbook: ../components/backend-eventstore/k8s/install.yml
+- import_playbook: ../components/provider-spotify/k8s/install.yml
+- import_playbook: ../components/service-playlist/k8s/install.yml
+- import_playbook: ../components/service-web/k8s/install.yml
+- import_playbook: ../components/frontend-web/k8s/install.yml
+- import_playbook: ../components/service-eventactivity/k8s/install.yml
+- import_playbook: ../components/service-housekeeping/k8s/install.yml

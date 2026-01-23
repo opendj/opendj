@@ -3,9 +3,9 @@
   gather_facts: false
   hosts: localhost
   vars_files:
-    - ../../../install/k8s/vars_secrets.yml
-    - ../../../install/k8s/vars_common.yml
-    - ../../../install/k8s/vars_env_{{ STAGE }}.yml
+    - ../../../k8s/vars_secrets.yml
+    - ../../../k8s/vars_common.yml
+    - ../../../k8s/vars_env_{{ STAGE }}.yml
   tasks:
     - name: "Combine env facts"
       tags: always
