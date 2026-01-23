@@ -1,0 +1,100 @@
+- kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: service-eventactivity
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service
+      app.kubernetes.io/name: service-eventactivity
+      app.kubernetes.io/part-of: service
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: service-eventactivity
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+    template:
+      metadata:
+        labels:
+          app: service-eventactivity
+      spec:
+        containers:
+          - name: service-eventactivity
+            image: "{{ ENV.COMMON.CONTAINER.IMAGE_REGISTRY }}/service-eventactivity:{{ ENV.COMMON.CONTAINER.IMAGE_TAG }}"
+            imagePullPolicy: "{{ ENV.COMMON.CONTAINER.PULL_POLICY }}"
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+                name: web
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+              capabilities:
+                drop:
+                  - "ALL"
+            env:
+              - name: quarkus_log_console_level
+                value: "{{ENV.SERVICE_EVENTACTIVITY.LOG_LEVEL | default('ALL')}}"
+              - name: "mp_messaging_outgoing_event_activity_bootstrap_servers"
+                value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST}}"
+              - name: "quarkus.http.port"
+                value: "8080"
+            readinessProbe:
+              tcpSocket:
+                port: 8080
+#              httpGet:
+#                path: /api/service-eventactivity/v1/ready
+#                port: 8080
+#                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            livenessProbe:
+              tcpSocket:
+                 port: 8080
+#              httpGet:
+#                path: /api/service-eventactivity/v1/health
+#                port: 8080
+#                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              successThreshold: 1
+              failureThreshold: 3
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: service-eventactivity
+    namespace: "{{ ENV.COMMON.NAMESPACE }}"
+    labels:
+      app: service-eventactivity
+  spec:
+    type: ClusterIP
+    ipFamilyPolicy: PreferDualStack
+    sessionAffinity: None
+    ports:
+      - name: web
+        port: 8080
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      app: service-eventactivity
+

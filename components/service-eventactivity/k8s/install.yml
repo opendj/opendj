@@ -1,0 +1,24 @@
+---
+- name: Install service-eventactivity
+  gather_facts: false
+  hosts: localhost
+  vars_files:
+    - ../../../install/k8s/vars_secrets.yml
+    - ../../../install/k8s/vars_common.yml
+    - ../../../install/k8s/vars_env_{{ STAGE }}.yml
+  tasks:
+    - name: "Combine env facts"
+      tags: always
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.SERVICE_EVENTACTIVITY.DEPLOY
+
+    - name: Deploy service-eventactivity manifest
+      kubernetes.core.k8s:
+        state: present
+        wait: true
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+        definition: "{{ lookup('template', 'manifest.yml') | from_yaml }}"
