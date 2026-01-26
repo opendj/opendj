@@ -24,7 +24,8 @@
         "log4js": "^4.5.1",
         "method-override": "^3.0.0",
         "request": "^2.88.2",
-        "request-promise-native": "^1.0.8"
+        "request-promise-native": "^1.0.8",
+        "util": "^0.12.5"
     },
     "engines": {
         "node": ">=6.11.0"
