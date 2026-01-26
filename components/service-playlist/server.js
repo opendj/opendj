@@ -1912,7 +1912,7 @@ async function getFromGrid(grid, key) {
         log.error("value from grid="+val);
         log.error(val);
         log.error("val.toString="+val.toString());
-        log.error("inspect"+util.inspect(myObject, { val: null }));
+        log.error("inspect"+util.inspect(val, { depth: null }));
         handleGridError(grid, err);
         throw err;
     }
