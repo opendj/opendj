@@ -1,9 +1,10 @@
 # Current Version
-V0.7.0  | 22.03.202  | CoronaMode SingleEvent-Multiple Provider release
+V0.7.0  | 22.03.2020  | CoronaMode SingleEvent-Multiple Provider release
 
 # Version history
 Version | Date       | Description
 ------- | ---------- | ------------
+V0.7.0  | 22.03.2020 | CoronaMode SingleEvent-Multiple Provider release
 V0.6.1  | 14.03.2020 | Feature Enhancements - Volume Control, Spotify Device Select
 V0.6.0  | 28.02.2020 | Feature Enhancements - Background Playlist, AutoMoveTrack, SkipHatedTracks, ...
 V0.5.1  | 23.02.2020 | Large Event - Event View Stats

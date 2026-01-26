@@ -1,0 +1,157 @@
+name: Release - Version and Build All Components
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  REGISTRY: quay.io
+
+jobs:
+  create-version:
+    name: Create Version Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          # Get the latest semantic version tag
+          LATEST_TAG=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="0.0.0"
+          fi
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Latest tag: $LATEST_TAG"
+
+      - name: Bump version
+        id: bump
+        run: |
+          LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+
+          case "${{ github.event.inputs.version_bump }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Create and push tag
+        run: |
+          NEW_VERSION="${{ steps.bump.outputs.new_version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NEW_VERSION" -m "Release version $NEW_VERSION"
+          git push origin "$NEW_VERSION"
+          echo "Created and pushed tag: $NEW_VERSION"
+
+  build-provider-spotify:
+    name: Build provider-spotify
+    needs: create-version
+    uses: ./.github/workflows/provider-spotify.yml
+    with:
+      version: ${{ needs.create-version.outputs.new_version }}
+    secrets: inherit
+
+  build-service-playlist:
+    name: Build service-playlist
+    needs: create-version
+    uses: ./.github/workflows/service-playlist.yml
+    with:
+      version: ${{ needs.create-version.outputs.new_version }}
+    secrets: inherit
+
+  build-service-web:
+    name: Build service-web
+    needs: create-version
+    uses: ./.github/workflows/service-web.yml
+    with:
+      version: ${{ needs.create-version.outputs.new_version }}
+    secrets: inherit
+
+  build-service-housekeeping:
+    name: Build service-housekeeping
+    needs: create-version
+    uses: ./.github/workflows/service-housekeeping.yml
+    with:
+      version: ${{ needs.create-version.outputs.new_version }}
+    secrets: inherit
+
+  build-service-eventactivity:
+    name: Build service-eventactivity
+    needs: create-version
+    uses: ./.github/workflows/service-eventactivity.yml
+    with:
+      version: ${{ needs.create-version.outputs.new_version }}
+    secrets: inherit
+
+  build-frontend-web:
+    name: Build frontend-web
+    needs: create-version
+    uses: ./.github/workflows/frontend-web.yml
+    with:
+      version: ${{ needs.create-version.outputs.new_version }}
+    secrets: inherit
+
+  update-version-file:
+    name: Update VERSIONS.md
+    needs: [create-version, build-provider-spotify, build-service-playlist, build-service-web, build-service-housekeeping, build-service-eventactivity, build-frontend-web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Update VERSIONS.md
+        run: |
+          NEW_VERSION="${{ needs.create-version.outputs.new_version }}"
+          CURRENT_DATE=$(date +%d.%m.%Y)
+
+          # Update the current version line
+          sed -i "s/^V[0-9]\+\.[0-9]\+\.[0-9]\+.*$/V$NEW_VERSION  | $CURRENT_DATE | Automated release/" VERSIONS.md
+
+          echo "Updated VERSIONS.md with version $NEW_VERSION"
+
+      - name: Commit and push version file
+        run: |
+          NEW_VERSION="${{ needs.create-version.outputs.new_version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSIONS.md
+          git commit -m "Update VERSIONS.md to $NEW_VERSION" || echo "No changes to commit"
+          git push origin master || echo "No changes to push"
