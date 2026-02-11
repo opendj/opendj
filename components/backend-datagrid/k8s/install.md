@@ -23,3 +23,5 @@ helm install infinispan openshift-helm-charts/infinispan --values infinispan-val
 # To upgrade (e.g. when values changed)
 helm upgrade infinispan openshift-helm-charts/infinispan --values infinispan-values.yaml --namespace infinispan --create-namespace
 
+# Uninstall:
+helm uninstall backend-datagrid       

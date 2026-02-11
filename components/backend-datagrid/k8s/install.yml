@@ -40,6 +40,37 @@
             USER: b3BlbmRq
             PSWD: LS1zZWNyZXQtLQ==
 
+    - name: Create Nodeport service
+      kubernetes.core.k8s:
+        state: present
+        wait: false
+        kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+        definition: 
+          kind: Service
+          apiVersion: v1
+          metadata:
+            name: backend-datagrid-nodeport
+            namespace: "{{ ENV.COMMON.NAMESPACE }}"
+          spec:
+            type: NodePort
+            internalTrafficPolicy: Cluster
+            ipFamilies:
+            - IPv4
+            ipFamilyPolicy: SingleStack
+            ports:
+            - name: infinispan
+              nodePort: 30222
+              port: 11222
+              protocol: TCP
+            selector:
+              app: infinispan-pod
+              clusterName: backend-datagrid
+            sessionAffinity: None
+          status:
+            loadBalancer: {}
+
+
+
     - name: Wait for datagrid pod to be ready
       kubernetes.core.k8s_info:
         kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
