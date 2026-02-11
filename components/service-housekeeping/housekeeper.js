@@ -58,6 +58,8 @@ async function connectToGrid(name) {
 async function getFromGrid(cache, key) {
     try {
         let val = await cache.get(key);
+        if (val)
+            val = JSON.parse(val);
         return val;
     } catch (err) {
         handleCacheError(cache, err);
