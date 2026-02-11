@@ -170,8 +170,6 @@ async function connectAllCaches() {
 async function getFromCache(cache, key) {
     try {
         let val = await cache.get(key);
-        if (val)
-            val = JSON.parse(val);
         return val;
     } catch (err) {
         handleCacheError(cache, err);
@@ -181,13 +179,13 @@ async function getFromCache(cache, key) {
 
 async function putIntoCache(cache, key, value) {
     log.trace("begin putIntoCache");
-    await cache.put(key, JSON.stringify(value));
+    await cache.put(key, value);
     log.trace("end putIntoCache");
 }
 
 function putIntoCacheAsync(cache, key, value) {
     log.trace("begin putIntoCacheAsync cache=%s, key=%s, value=%s", cache, key, value);
-    cache.put(key, JSON.stringify(value))
+    cache.put(key, value)
         .then(function() {
             log.trace("putIntoCacheAsync success");
         })

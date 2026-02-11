@@ -451,8 +451,6 @@ async function connectToGrid(name) {
 async function getFromGrid(grid, key) {
     try {
         let val = await grid.get(key);
-        if (val)
-            val = JSON.parse(val);
         return val;
     } catch (err) {
         handleGridError(grid, err);

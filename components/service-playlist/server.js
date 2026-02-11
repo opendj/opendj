@@ -1903,9 +1903,6 @@ async function getFromGrid(grid, key) {
     let val = null;
     try {
         val = await grid.get(key);
-        if (val) {
-            val = JSON.parse(val);
-        }
         return val;
     } catch (err) {
         log.error("!!! getFromGrid failed with error="+err);
@@ -1920,7 +1917,7 @@ async function getFromGrid(grid, key) {
 
 async function putIntoGrid(grid, key, value) {
     log.trace("begin putIntoGrid grid=%s, key=%s, value=%s", grid, key, value);
-    await grid.put(key, JSON.stringify(value));
+    await grid.put(key, value);
     log.trace("end putIntoGrid key=%s", key);
 }
 
@@ -1932,7 +1929,7 @@ async function removeFromGrid(grid, key) {
 
 function putIntoGridAsync(grid, key, value) {
     log.trace("begin putIntoGridAsync grid=%s, key=%s, value=%s", grid, key, value);
-    grid.put(key, JSON.stringify(value))
+    grid.put(key, value)
         .then(function() {
             log.trace("putIntoGridAsync success");
         })

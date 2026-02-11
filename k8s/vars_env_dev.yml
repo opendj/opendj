@@ -17,7 +17,14 @@ specific:
                   PULL_POLICY: Always
 
             K8S:
-                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+#                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/stormshift-automation/scrible/kubeconfig-stormshift-ocp11"
+                  STORAGE_CLASS_FILE: "lvms-vg1"
+                  INGRESSCLASS: "openshift-default"
+            CERTMGR:
+                  DEPLOY: false
+      BACKEND_EVENTSTORE:
+            DEPLOY: false
 
 #      BACKEND_EVENTSTORE:
 #            KAFKA:
@@ -42,6 +49,8 @@ specific:
 
       SERVICE_WEB:
             REPLICAS: 2
+      SERVICE_EVENTACTIVITY:
+            DEPLOY: false
 
       FRONTEND_WEB:
             REPLICAS: 1
