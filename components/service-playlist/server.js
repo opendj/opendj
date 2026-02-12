@@ -1824,7 +1824,7 @@ const CACHE_CONFIG_XML = `<infinispan>
                     <write-behind modification-queue-size="200" fail-silently="false"/>
                 </file-store>
             </persistence>
-            <encoding media-type="application/json"/>
+            <encoding media-type="text/plain"/>
         </distributed-cache>
     </cache-container>
 </infinispan>`
@@ -1879,8 +1879,8 @@ async function connectToGrid(name) {
             password: DATAGRID_PSWD,
             serverName: 'infinispan'},
           dataFormat : {
-            keyType: 'application/json',
-            valueType: 'application/json'
+            keyType: 'text/plain',
+            valueType: 'text/plain'
             }});
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);

@@ -44,8 +44,8 @@ async function connectToGrid(name) {
             password: ENV_DATAGRID_PSWD,
             serverName: 'infinispan'},
           dataFormat : {
-            keyType: 'application/json',
-            valueType: 'application/json'
+            keyType: 'text/plain',
+            valueType: 'text/plain'
             }});
         log.trace("end connected to grid %s", name);
     } catch (err) {

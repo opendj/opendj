@@ -433,8 +433,8 @@ async function connectToGrid(name) {
             password: DATAGRID_PSWD,
             serverName: 'infinispan'},
           dataFormat : {
-            keyType: 'application/json',
-            valueType: 'application/json'
+            keyType: 'text/plain',
+            valueType: 'text/plain'
             }});
         readyState.datagridClient = true;
         log.debug("connectToGrid grid=%s client=%s", name, grid);
