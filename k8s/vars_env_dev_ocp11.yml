@@ -1,0 +1,56 @@
+# Variables specific for DEV stage:
+
+# These cert are valid for dev.opendj.io
+# created using lets encrypt openshift-acme in demo env
+# PROBLEM: let's encrypt does not work for dev env, as it is not
+# in public internet. So we use a tricky hack:
+# Step 1: Change dns entry dev.opendj.io from stormshift to demo env
+# Step 2: create a dummy route in demo env there with hostname dev.opendj.io
+# Step 3: Openshift acme will create a cert and add it to the dummy route
+# Step 4: Export cert and key from there to here:
+# Step 5: change back dns entry to stormshift
+
+specific:
+      COMMON:
+            CONTAINER:
+                  IMAGE_TAG: "master"
+                  PULL_POLICY: Always
+
+            K8S:
+#                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/stormshift-automation/scrible/kubeconfig-stormshift-ocp11"
+                  STORAGE_CLASS_FILE: "lvms-vg1"
+                  INGRESSCLASS: "openshift-default"
+            CERTMGR:
+                  DEPLOY: false
+      BACKEND_EVENTSTORE:
+            DEPLOY: false
+
+#      BACKEND_EVENTSTORE:
+#            KAFKA:
+#                  NUM_BROKERS: 2
+#                  NUM_ZOOKEPERS: 1
+
+      BACKEND_DATAGRID:
+            REPLICAS: 1
+
+      PROVIDER_SPOTIFY:
+            LOG_LEVEL: "trace"
+            REPLICAS: 2
+
+      SERVICE_PLAYLIST:
+            LOG_LEVEL: "trace"
+            TEST_EVENT_ID: "demo"
+            DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
+            MOCKUP_NO_ACTUAL_PLAYING: "true"
+            MOCKUP_AUTOSKIP_SECONDS: "20"
+            INTERNAL_POLL_INTERVAL: "20000"
+            REPLICAS: 2
+
+      SERVICE_WEB:
+            REPLICAS: 2
+      SERVICE_EVENTACTIVITY:
+            DEPLOY: false
+
+      FRONTEND_WEB:
+            REPLICAS: 1
