@@ -459,7 +459,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     <ion-title>Add song to playlist</ion-title>
   </ion-toolbar>
   <ion-toolbar color="dark">
-    <ion-searchbar id="search" [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for tracks, albums or artist" #myInput>
+    <ion-searchbar id="search" [(ngModel)]="queryText" (ionInput)="updateSearch()" (ionChange)="updateSearch()" placeholder="Search for tracks, albums or artist" #myInput>
     </ion-searchbar>
   </ion-toolbar>
 </ion-header>
