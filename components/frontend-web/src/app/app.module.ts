@@ -16,7 +16,7 @@ import { ConfigService } from './providers/config.service';
 
 @NgModule({ declarations: [AppComponent],
     bootstrap: [AppComponent], imports: [BrowserModule,
-        IonicModule.forRoot({ animated: true }),
+        IonicModule.forRoot({ animated: true, innerHTMLTemplatesEnabled: true }),
         IonicStorageModule.forRoot(),
         AppRoutingModule], providers: [
         ConfigService,
