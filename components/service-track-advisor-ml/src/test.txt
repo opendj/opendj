@@ -1,9 +1,0 @@
-https://jndfiles-pub.s3-eu-west-1.amazonaws.com/images/dogs/dogs-12.jpg
-https://jndfiles-pub.s3-eu-west-1.amazonaws.com/images/cats/cats-10.jpg
-
-https://jndfiles-pub.s3-eu-west-1.amazonaws.com/images/airplane/airplane-24.jpg
-https://jndfiles-pub.s3-eu-west-1.amazonaws.com/images/airplane/airplane-difficult-3.jpg
-
-
-https://jndfiles-pub.s3-eu-west-1.amazonaws.com/images/cars/cars-12.jpg
-https://jndfiles-pub.s3-eu-west-1.amazonaws.com/images/cars/cars-11.jpg
