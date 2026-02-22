@@ -47,8 +47,8 @@
             <ion-virtual-scroll [items]="currentPlaylist?.nextTracks" virtualTrackBy="item.id" approxItemHeight="63px">
                 <ion-row nowrap *virtualItem="let item" id="track-{{item.id}}">
 -->
-            <ion-reorder *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
-            <ion-row nowrap>
+            <ion-item *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" class="track-item" lines="none">
+            <ion-row nowrap class="track-row">
                 <!-- Album Cover-->
                 <ion-col *ngIf="platform.width()>420" size="auto" class="ion-align-self-center">
                     <a href="{{item.image_url_ref}}" target="_blank">
@@ -96,7 +96,7 @@
 
                 <!-- Action Buttons (DEL, TOP, FIT, SEL), maybe as ICONS only to save space-->
                 <ion-col size="auto" class="track-action-col ion-align-self-center ion-text-nowrap workaroundTransparency">
-                    <!-- SEL 
+                    <!-- SEL
                     <ion-checkbox color="success" class="track-action-select" [checked]="isTrackSelected(item.id)" (click)="selectTrack(item, i)"></ion-checkbox>
                     -->
 
@@ -129,15 +129,13 @@
                     </ion-button>
                 </ion-col>
 
-                <!-- Last not least: the most important feature: the re-order button! -->
-                <ion-col size="auto " class="track-mov-col  ion-align-self-center workaroundTransparency">
-                    <ion-chip id="action-mov-{{item.id}}" color="secondary" class="track-action-mov">
-                        <ion-label>{{item.pos}}</ion-label>
-                    </ion-chip>
-                </ion-col>
-
             </ion-row>
+            <ion-reorder slot="end">
+                <ion-chip id="action-mov-{{item.id}}" color="secondary" class="track-action-mov">
+                    <ion-label>{{item.pos}}</ion-label>
+                </ion-chip>
             </ion-reorder>
+            </ion-item>
         </ion-reorder-group>
 
 

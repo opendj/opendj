@@ -117,6 +117,7 @@ ion-fab-button {
     font-size: 11px;
     margin-left: 2px;
     margin-right: 2px;
+    pointer-events: auto;
 }
 
 .track-action-select {
@@ -161,4 +162,38 @@ ion-fab-button {
 .track-action-mov {
     text-align: center;
     margin: 0px;
+    opacity: 1 !important;
+    background: var(--ion-color-secondary) !important;
+    color: var(--ion-color-secondary-contrast) !important;
 }
+
+
+// Track item styles - make ion-item transparent and full-width for grid
+.track-item {
+    --background: transparent;
+    --padding-start: 0px;
+    --padding-end: 8px;
+    --inner-padding-end: 0px;
+    --inner-padding-start: 0px;
+    --min-height: auto;
+    width: 100%;
+}
+
+.track-row {
+    width: 100%;
+    flex: 1;
+}
+
+// Style the reorder handle with chip inside
+.track-item ion-reorder {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.track-action-mov {
+    cursor: move;
+    margin: 0;
+}
+
