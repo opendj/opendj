@@ -1,22 +1,22 @@
 # Current Version
-V0.8.0  | 26.01.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
 
 # Version history
 Version | Date       | Description
 ------- | ---------- | ------------
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
-V0.8.0  | 26.01.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
+V0.8.1  | 23.02.2026 | Automated release
 
 
 In the [old Repo](https://github.com/sa-mw-dach/opendj):
