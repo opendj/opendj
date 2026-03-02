@@ -28,12 +28,10 @@ common:
 
   BACKEND_EVENTSTORE:
     DEPLOY: true
+    REPLICAS: 2
     KAFKA:
       HOST: "backend-eventstore-kafka-bootstrap:9092"
       USE: true
-      TOPIC_CMD:  oc --namespace dfroehli-opendj-{{STAGE}} rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810
-      NUM_BROKERS: 2
-      NUM_ZOOKEPERS: 1
       NUM_PARTITIONS: 1
 
   BACKEND_DATAGRID:
@@ -62,6 +60,7 @@ common:
     DEPLOY: true
 
   SERVICE_EVENTACTIVITY:
+    REPLICAS: 2
     PROVIDER_URL: "http://service-eventactivity:8080/api/service-eventactivity/v1/"
     DEPLOY: true
     EMIT_ACTIVITY: true

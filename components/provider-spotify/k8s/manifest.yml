@@ -18,7 +18,7 @@
       app.kubernetes.io/name: provider-spotify
       app.kubernetes.io/part-of: service
   spec:
-    replicas: 1
+    replicas: {{ ENV.PROVIDER_SPOTIFY.REPLICAS }}
     selector:
       matchLabels:
         app: provider-spotify

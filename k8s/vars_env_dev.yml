@@ -11,37 +11,38 @@
 # Step 5: change back dns entry to stormshift
 
 specific:
-      COMMON:
-            CONTAINER:
-                  IMAGE_TAG: "master"
-                  PULL_POLICY: Always
+  COMMON:
+    CONTAINER:
+      IMAGE_TAG: "master"
+      PULL_POLICY: Always
 
-            K8S:
-                  KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
+    K8S:
+      KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
 
-#      BACKEND_EVENTSTORE:
-#            KAFKA:
-#                  NUM_BROKERS: 2
-#                  NUM_ZOOKEPERS: 1
+  BACKEND_EVENTSTORE:
+    REPLICAS: 1
 
-      BACKEND_DATAGRID:
-            REPLICAS: 1
+  BACKEND_DATAGRID:
+    REPLICAS: 1
 
-      PROVIDER_SPOTIFY:
-            LOG_LEVEL: "trace"
-            REPLICAS: 2
+  PROVIDER_SPOTIFY:
+    LOG_LEVEL: "trace"
+    REPLICAS: 1
 
-      SERVICE_PLAYLIST:
-            LOG_LEVEL: "trace"
-            TEST_EVENT_ID: "demo"
-            DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
-            MOCKUP_NO_ACTUAL_PLAYING: "true"
-            MOCKUP_AUTOSKIP_SECONDS: "20"
-            INTERNAL_POLL_INTERVAL: "20000"
-            REPLICAS: 2
+  SERVICE_PLAYLIST:
+    LOG_LEVEL: "trace"
+    TEST_EVENT_ID: "demo"
+    DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
+    MOCKUP_NO_ACTUAL_PLAYING: "true"
+    MOCKUP_AUTOSKIP_SECONDS: "20"
+    INTERNAL_POLL_INTERVAL: "20000"
+    REPLICAS: 1
 
-      SERVICE_WEB:
-            REPLICAS: 2
+  SERVICE_WEB:
+    REPLICAS: 1
 
-      FRONTEND_WEB:
-            REPLICAS: 1
+  SERVICE_EVENTACTIVITY:
+    REPLICAS: 1
+
+  FRONTEND_WEB:
+    REPLICAS: 1

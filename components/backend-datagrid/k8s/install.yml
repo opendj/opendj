@@ -11,7 +11,7 @@
       tags: always
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
-        
+
     - name: Deploy Datagrid with helm
       when: ENV.BACKEND_DATAGRID.DEPLOY
       kubernetes.core.helm:

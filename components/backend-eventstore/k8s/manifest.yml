@@ -6,7 +6,7 @@
     labels:
       strimzi.io/cluster: backend-eventstore
   spec:
-    replicas: 1
+    replicas: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
     roles:
       - controller
       - broker
@@ -39,11 +39,11 @@
           type: internal
           tls: true
       config:
-        offsets.topic.replication.factor: 1
-        transaction.state.log.replication.factor: 1
-        transaction.state.log.min.isr: 1
-        default.replication.factor: 1
-        min.insync.replicas: 1
+        offsets.topic.replication.factor: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
+        transaction.state.log.replication.factor: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
+        transaction.state.log.min.isr: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
+        default.replication.factor: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
+        min.insync.replicas: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
     entityOperator:
       topicOperator: {}
       userOperator: {}
