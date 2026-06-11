@@ -30,7 +30,7 @@ specific:
 
   PROVIDER_SPOTIFY:
     LOG_LEVEL: "error"
-    SPOTIFY_CALLBACK_URL: "http://www.opendj.io/api/provider-spotify/v1/auth_callback"
+    SPOTIFY_CALLBACK_URL: "https://www.opendj.io/api/provider-spotify/v1/auth_callback"
     REPLICAS: 2
 
   SERVICE_HOUSEKEEPING:
