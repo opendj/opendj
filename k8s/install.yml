@@ -22,7 +22,13 @@
         wait: true
         definition: "{{ lookup('template', 'manifest.yml') | from_yaml }}"
 
+    - name: Check if TLS cert if available
+      ansible.builtin.stat:
+        path: '../secret_{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}'
+      register: tls_cert
+
     - name: Restore TLS cert if available
+      when: tls_cert.stat.exists
       k8s:
         state: present
         kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
@@ -30,15 +36,27 @@
         definition: "{{ lookup('template', '../secret_{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}') | from_yaml }}"
 
     - name: Create TLS cert via cert-mgr
-      when: ENV.COMMON.CERTMGR.DEPLOY
+      when: ENV.COMMON.CERTMGR.DEPLOY and not tls_cert.stat.exists
       tags: certmgr
       block:
         - name: Apply certmgr manifest
           k8s:
             state: present
             kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
-            wait: true
             definition: "{{ lookup('template', 'manifest_certmgr.yml') | from_yaml }}"
+
+        - name: Wait for cert to be ready
+          k8s_info:
+            kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
+            kind: Certificate
+            api_version: cert-manager.io/v1
+            name: "{{ ENV.COMMON.NAMESPACE }}"
+            namespace: "{{ ENV.COMMON.NAMESPACE }}"
+            wait: true
+            wait_condition:
+              type: Ready
+              status: "True"
+
 
 - import_playbook: ../components/backend-datagrid/k8s/install.yml
 - import_playbook: ../components/backend-eventstore/k8s/install.yml

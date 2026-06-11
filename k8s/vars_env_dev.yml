@@ -19,6 +19,12 @@ specific:
     K8S:
       KUBECONFIG: "/Users/dfroehli/RedHat/projects/OpenDJ/secret_dev_kubeconfig.yml"
 
+    CERTMGR:
+# For Non-PROD:
+#      SERVER: "https://acme-staging-v02.api.letsencrypt.org/directory"
+  # For PROD:
+      SERVER: "https://acme-v02.api.letsencrypt.org/directory"
+
   BACKEND_EVENTSTORE:
     REPLICAS: 1
 

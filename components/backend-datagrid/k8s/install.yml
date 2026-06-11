@@ -34,7 +34,7 @@
           apiVersion: v1
           metadata:
             name: backend-datagrid-credentials
-            namespace: opendj-dev
+            namespace: "{{ ENV.COMMON.NAMESPACE }}"
           type: Opaque
           data:
             USER: b3BlbmRq

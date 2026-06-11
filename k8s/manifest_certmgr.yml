@@ -32,3 +32,8 @@
     commonName: "{{ ENV.COMMON.DNS_BASENAME }}"
     dnsNames:
     - "{{ ENV.COMMON.DNS_BASENAME }}"
+{% if ENV.COMMON.DNS_ADDITIONAL_NAMES is defined %}
+{% for item in ENV.COMMON.DNS_ADDITIONAL_NAMES %}
+    - "{{ item }}"
+{% endfor %}
+{% endif %}
