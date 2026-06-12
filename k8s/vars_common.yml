@@ -7,7 +7,7 @@
 common:
   COMMON:
     NAMESPACE: "opendj-{{ STAGE | mandatory}}"
-# Remember to change Callback URL below, too:
+# Remember to change Callback and Event URL below, too:
     DNS_BASENAME: "{{STAGE}}.opendj.io"
     CONTAINER:
       IMAGE_TAG: "{{STAGE}}"
@@ -51,6 +51,7 @@ common:
 
   SERVICE_PLAYLIST:
     DEPLOY: true
+    EVENT_URL: "{{STAGE}}.opendj.io"
 
   SERVICE_WEB:
     DEPLOY: true

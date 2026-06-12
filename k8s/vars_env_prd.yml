@@ -46,6 +46,7 @@ specific:
     MOCKUP_AUTOSKIP_SECONDS: "0"
     INTERNAL_POLL_INTERVAL: "5000"
     REPLICAS: 2
+    EVENT_URL: "www.opendj.io"
 
   SERVICE_WEB:
     LOG_LEVEL: "error"
