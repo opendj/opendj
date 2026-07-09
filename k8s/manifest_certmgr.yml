@@ -19,6 +19,7 @@
         http01:
           ingress:
             ingressClassName: "{{ ENV.COMMON.K8S.INGRESSCLASS }}" 
+            serviceType: ClusterIP
 
 - apiVersion: cert-manager.io/v1
   kind: Certificate
