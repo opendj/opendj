@@ -2033,7 +2033,6 @@ setImmediate(async function() {
 
         if (TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(TEST_EVENT_ID);
-            testEvent = null;
             if (testEvent) {
                 log.debug("Test event already present");
             } else {
