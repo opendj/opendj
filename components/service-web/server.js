@@ -855,9 +855,24 @@ setImmediate(async function() {
         await connectToDatagrid();
         startKafkaConsumer();
 
-        http.listen(port, function() {
+        const server = http.listen(port, function() {
             log.info('listening on *: ' + port);
             readyState.websocket = true;
+        });
+
+        process.on('SIGTERM', () => {
+            log.fatal('SIGTERM signal received. Starting graceful shutdown...');
+            
+            server.close(() => {
+                log.info('... graceful shutdown completed');
+                process.exit(0); 
+            });
+
+            // 3. Hard timeout safeguard (Force exit if connections hang too long)
+            setTimeout(() => {
+                log.fatal('Forced shutdown: Could not close connections in time.');
+                process.exit(1);
+            }, 1000); 
         });
 
     } catch (err) {

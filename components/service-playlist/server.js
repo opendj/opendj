@@ -2067,8 +2067,29 @@ setImmediate(async function() {
     setInterval(cleverCheckEvents, INTERNAL_POLL_INTERVAL);
 
     log.debug("opening server port");
-    app.listen(PORT, function() {
+    const server = app.listen(PORT, function() {
         log.info('Now listening on port %s!', PORT);
+    });
+
+    process.on('SIGTERM', () => {
+        log.fatal('SIGTERM signal received. Starting graceful shutdown...');
+        
+        server.close(() => {
+            log.info('Http server closed. Disconnecting from data grid');
+            gridEvents.disconnect();
+            gridEventExt.disconnect();
+            gridEventLck.disconnect();
+            gridPlaylists.disconnect();
+            
+            log.info('... graceful shutdown completed');
+            process.exit(0); 
+        });
+
+        // 3. Hard timeout safeguard (Force exit if connections hang too long)
+        setTimeout(() => {
+            log.fatal('Forced shutdown: Could not close connections in time.');
+            process.exit(1);
+        }, 1000); 
     });
 
 });

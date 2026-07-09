@@ -227,6 +227,12 @@ async function main() {
 if (ENV_CRONTAB) {
     log.info("Using crontab %s", ENV_CRONTAB);
     cron.schedule(ENV_CRONTAB, main);
+
+    process.on('SIGTERM', () => {
+        log.fatal('SIGTERM signal received. Terminating...');
+            process.exit(0); 
+    });
+
 } else {
     log.info("No crontab - executing once");
     setImmediate(main);

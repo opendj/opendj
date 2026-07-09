@@ -1755,6 +1755,7 @@ router.get('/internal/exportPlaylist', async function(req, res) {
 app.use("/api/provider-spotify/v1", router);
 
 setImmediate(async function() {
+
     try {
         loadGenreMapFromFile();
 
@@ -1766,9 +1767,26 @@ setImmediate(async function() {
         await refreshExpiredTokens();
         setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
 
-        app.listen(PORT, function() {
+        const server = app.listen(PORT, function() {
             log.info('Now listening on port *:' + PORT);
         });
+        
+        process.on('SIGTERM', () => {
+            log.fatal('SIGTERM signal received. Starting graceful shutdown...');
+            
+            server.close(() => {
+                log.info('... graceful shutdown completed');
+                process.exit(0); 
+            });
+
+            // 3. Hard timeout safeguard (Force exit if connections hang too long)
+            setTimeout(() => {
+                log.fatal('Forced shutdown: Could not close connections in time.');
+                process.exit(1);
+            }, 1000); 
+        });
+
+
     } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
         log.fatal("init failed with err %s", err);
@@ -1776,4 +1794,6 @@ setImmediate(async function() {
         log.fatal("!!!!!!!!!!!!!!!");
         process.exit(42);
     }
+
+
 });

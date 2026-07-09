@@ -62,6 +62,7 @@ common:
 
   SERVICE_HOUSEKEEPING:
     DEPLOY: true
+    CRONTAB: "0,30 * * * * *"
 
   SERVICE_EVENTACTIVITY:
     REPLICAS: 2
