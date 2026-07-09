@@ -210,3 +210,41 @@ AAA does not resolve, issue with fritz box?
 
 ionos Target Nameserver:
 ns-540.awsdns-03.net, ns-1829.awsdns-36.co.uk, ns-82.awsdns-10.com, ns-1252.awsdns-28.org
+
+
+# Does not work in Red Hat Office, because IPV6 server not supporet
+Try / verify this is not working:
+curl -6 -v www.google.de
+
+
+Idea: setup nginx on AWS instance to forward IPV4 to IPV6 backend
+https://github.com/orgs/opendj/projects/1?pane=issue&itemId=207198158&issue=opendj%7Copendj%7C368
+
+## Spinup EC instance:
+aws ec2 run-instances --image-id 'ami-07bdcf759aaa4c49d' --instance-type 't4g.nano' --key-name 'opendj-aws' --ebs-optimized --block-device-mappings '{"DeviceName":"/dev/xvda","Ebs":{"Encrypted":false,"DeleteOnTermination":true,"SnapshotId":"snap-07f164d4aad63d9f8","VolumeSize":8,"VolumeType":"standard"}}' --network-interfaces '{"SubnetId":"subnet-b753a1fb","AssociatePublicIpAddress":true,"DeviceIndex":0,"Ipv6AddressCount":1,"Groups":["sg-7a5a731d"]}' --credit-specification '{"CpuCredits":"unlimited"}' --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"opendj-ip4-forwarder"}]}' --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"required"}' --private-dns-name-options '{"HostnameType":"resource-name","EnableResourceNameDnsARecord":true,"EnableResourceNameDnsAAAARecord":true}' --count '1' 
+
+## Login using public IP:
+ssh -i "~/.ssh/opendj-aws.pem" ec2-user@ec2-3-69-29-206.eu-central-1.compute.amazonaws.com
+
+sudo dnf install nginx -y
+
+## Deploy Cert Manager using helm:
+helm install   cert-manager oci://quay.io/jetstack/charts/cert-manager   --version v1.20.3   --namespace cert-manager   --create-namespace   --set crds.enabled=true
+
+That does not work out of the box, because new cert-manager version uses Ingress with 
+Starting in version 1.18, cert-manager changed the default pathType for its temporary HTTP-01 challenge Ingress objects from ImplementationSpecific to Exact.
+However, OpenShift’s default route-controller-manager (which MicroShift runs internally to translate Ingress objects into native Routes) does not support the Exact path type. It explicitly rejects it, drops the translation rule, and throws the exact error you caught:
+Incomplete ingress to route rules detected: Unsupported exact path type in rule at index 0, path index 0
+
+
+To fix:
+oc edit deployment cert-manager -n cert-manager
+
+spec:
+  containers:
+  - name: cert-manager-controller
+    args:
+    - --v=2
+    - --cluster-resource-namespace=$(POD_NAMESPACE)
+    - --leader-election-namespace=kube-system
+    - --feature-gates=ACMEHTTP01IngressPathTypeExact=false # Add this line

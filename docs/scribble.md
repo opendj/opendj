@@ -307,3 +307,16 @@ aws --profile opendj-ops route53 list-resource-record-sets
 
 aws --profile opendj-ops route53 change-resource-record-sets
 
+#
+# Delete all services pods for a restart
+#
+
+oc delete pods --wait=false -l app=provider-spotify
+oc delete pods --wait=false -l app=service-playlist
+oc delete pods --wait=false -l app=service-web
+oc delete pods --wait=false -l app=frontend-web
+oc delete pods --wait=false -l app=service-eventactivity
+oc delete pods --wait=false -l app=service-housekeeping
+
+
+
