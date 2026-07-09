@@ -33,6 +33,9 @@ common:
       HOST: "backend-eventstore-kafka-bootstrap:9092"
       USE: true
       NUM_PARTITIONS: 1
+    LIMIT_CPU: "1000m"
+    LIMIT_MEMORY: 768
+    STORAGE_SIZE: "1Gi"
 
   BACKEND_DATAGRID:
     DEPLOY: true
