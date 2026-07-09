@@ -20,6 +20,10 @@ sed -i '' 's/namespace: .*/namespace: kafka-operator/' install/cluster-operator/
  vi install/cluster-operator/060-Deployment-strimzi-cluster-operator.yaml
 
 
+oc delete clusterrolebinding strimzi-cluster-operator-namespaced
+oc delete clusterrolebinding strimzi-cluster-operator-watched
+oc delete clusterrolebinding strimzi-cluster-operator-entity-operator-delegation
+
 # Step 3: ClusterRoleBindings
 oc create clusterrolebinding strimzi-cluster-operator-namespaced --clusterrole=strimzi-cluster-operator-namespaced --serviceaccount kafka-operator:strimzi-cluster-operator
 oc create clusterrolebinding strimzi-cluster-operator-watched --clusterrole=strimzi-cluster-operator-watched --serviceaccount kafka-operator:strimzi-cluster-operator
@@ -27,3 +31,7 @@ oc create clusterrolebinding strimzi-cluster-operator-entity-operator-delegation
 
 # Step 4: Deploy:
 oc apply -f install/cluster-operator -n kafka-operator
+
+# Uninstall:
+oc delete -f install/cluster-operator -n kafka-operator
+

@@ -1,7 +1,7 @@
-- apiVersion: kafka.strimzi.io/v1beta2
+- apiVersion: kafka.strimzi.io/v1
   kind: KafkaNodePool
   metadata:
-    name: dual-role
+    name: kafka
     namespace: "{{ ENV.COMMON.NAMESPACE }}"
     labels:
       strimzi.io/cluster: backend-eventstore
@@ -10,25 +10,37 @@
     roles:
       - controller
       - broker
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "{{ ENV.BACKEND_EVENTSTORE.LIMIT_CPU }}"
+        memory: "{{ ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY }}Mi"
+    jvmOptions:
+      -Xms: "{{ (ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY | int * 0.5) | int}}m" # Minimum heap size
+      -Xmx: "{{ (ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY | int * 0.75) | int}}m" # Maximum heap size
+#      -Xms: 128m 
+#      -Xmx: 512m
     storage:
       type: jbod
       volumes:
         - id: 0
           type: persistent-claim
-          size: 2Gi
+          size: "{{ ENV.BACKEND_EVENTSTORE.STORAGE_SIZE }}"
           class: "{{ ENV.COMMON.K8S.STORAGE_CLASS_FILE}}"
           deleteClaim: true
           kraftMetadata: shared
 
 - kind: Kafka
-  apiVersion: kafka.strimzi.io/v1beta2
+  apiVersion: kafka.strimzi.io/v1
   metadata:
     name: backend-eventstore
     namespace: "{{ ENV.COMMON.NAMESPACE }}"
   spec:
     kafka:
-      version: 4.1.0
-      metadataVersion: 4.1-IV1
+      version: "4.3.0"
+      metadataVersion: "4.3"
       listeners:
         - name: plain
           port: 9092
@@ -38,12 +50,13 @@
           port: 9093
           type: internal
           tls: true
+
       config:
         offsets.topic.replication.factor: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
         transaction.state.log.replication.factor: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
         transaction.state.log.min.isr: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
         default.replication.factor: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
         min.insync.replicas: {{ ENV.BACKEND_EVENTSTORE.REPLICAS}}
-    entityOperator:
-      topicOperator: {}
-      userOperator: {}
+#    entityOperator:
+#      topicOperator: {}
+#      userOperator: {}
