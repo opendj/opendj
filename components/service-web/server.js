@@ -518,7 +518,7 @@ async function checkGridConnection() {
 const mapOfPlaylistThrottles = new Map();
 
 async function onPlaylistModifiedWithThrottle(key, entryVersion, listenerID) {
-    log.trace("begin onPlaylistModifiedWithThrottle key=%s", key);
+    log.debug("begin onPlaylistModifiedWithThrottle key=%s", key);
     let throttledOnPlaylistModified = mapOfPlaylistThrottles.get(key);
     if (!throttledOnPlaylistModified) {
         log.debug("create throttle for onPlaylistModified for event=%s", key)
@@ -533,6 +533,8 @@ async function onPlaylistModifiedWithThrottle(key, entryVersion, listenerID) {
 async function onPlaylistModified(key, entryVersion, listenerID) {
     log.trace("begin onPlaylistModified key=%s", key);
     try {
+        log.debug("received PlaylistModified from grid key=%s", key);
+    
         if (key.indexOf(':') < 0) {
             log.debug("onPlaylistModified: ignore strange event with key %s", key);
             return;
@@ -556,11 +558,11 @@ async function onEventModified(key, entryVersion, listenerID) {
     log.trace("begin onEventModified key=%s", key);
     try {
         if (key.indexOf(':') > 0) {
-            log.trace("onEventModified: ignore strange event with key %s", key);
+            log.debug("onEventModified: ignore strange event with key %s", key);
         } else if ("-1" == key) {
-            log.trace("ignoring event key used for clever event checking");
+            log.debug("ignoring event key used for clever event checking");
         } else {
-            log.trace("get and emit eventID=%s", key);
+            log.debug("received EventModified from grid for  eventID=%s", key);
             let eventID = key;
             let event = await getEventForEventID(key);
             let namespace = getNameSpaceForEventID(eventID);
@@ -622,7 +624,7 @@ function getNameSpaceForEventID(eventID) {
 
 function emitPlaylist(socketOrNamespace, playlist) {
     log.trace("begin emitPlaylist id=%s", playlist.playlistID);
-
+    log.debug("emitPlaylist id=%s", playlist.playlistID);
     log.trace("nsp=%s", socketOrNamespace.nsp);
 
     socketOrNamespace.emit('current-playlist', playlist);
@@ -663,7 +665,7 @@ function emitEventActivity(socket, activity, stats) {
         socket.emit("event-activity", simpleActivity);
         log.debug("event activity emitted successfully: ", simpleActivity);
     } else {
-        log.debug("event activity emitter is disabled");
+        log.trace("event activity emitter is disabled");
     }
 
     log.trace("end emitEventActivity");
@@ -681,7 +683,7 @@ async function emitEventToSocket(socket) {
 }
 
 async function onRefreshEvent(socket) {
-    log.trace("begin onRefreshEvent socket.id=%s", socket.id);
+    log.debug("begin onRefreshEvent socket.id=%s", socket.id);
     try {
         await emitEventToSocket(socket);
     } catch (err) {
@@ -696,6 +698,7 @@ async function onRefreshPlaylist(socket) {
         let eventID = getEventIDFromSocketNamespace(socket);
         let event = await getEventForEventID(eventID);
         if (event) {
+            log.debug("onRefreshPlaylist for eventID=%s", eventID);
             let playlist = await getPlaylistForPlaylistID(eventID + ":" + event.activePlaylist);
             emitPlaylist(socket, playlist);
         } else {
@@ -784,7 +787,7 @@ io.of(/^\/event\/.+$/)
 // ------
 // Login:
 router.post('/events/:eventID/user/login', async function(req, res) {
-    log.trace("begin login eventId=%s", req.params.eventID);
+    log.debug("begin login eventId=%s", req.params.eventID);
     log.trace("body=%s", JSON.stringify(req.body));
     log.trace("headers=%s", JSON.stringify(req.headers));
 
@@ -808,7 +811,7 @@ router.post('/events/:eventID/user/login', async function(req, res) {
 // ------
 // Logout:
 router.post('/events/:eventID/user/logout', async function(req, res) {
-    log.trace("begin logout eventId=%s", req.params.eventID);
+    log.debug("begin logout eventId=%s", req.params.eventID);
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
