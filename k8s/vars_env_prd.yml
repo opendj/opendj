@@ -8,7 +8,7 @@ specific:
 #    DNS_ADDITIONAL_NAMES: 
 #    - prd2.opendj.io
     CONTAINER:
-      IMAGE_TAG: "0.8.1"
+      IMAGE_TAG: "0.8.3"
       PULL_POLICY: IfNotPresent
 
     K8S:
@@ -30,26 +30,28 @@ specific:
   PROVIDER_SPOTIFY:
     LOG_LEVEL: "error"
     SPOTIFY_CALLBACK_URL: "https://www.opendj.io/api/provider-spotify/v1/auth_callback"
-    REPLICAS: 1
+    REPLICAS: 2
 
   SERVICE_HOUSEKEEPING:
     LOG_LEVEL: "error"
 
   SERVICE_PLAYLIST:
-    REPLICAS: 1
+    REPLICAS: 2
     LOG_LEVEL: "info"
     TEST_EVENT_CREATE: "true"
     TEST_EVENT_ID: "demo"
     DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "false"
     DEFAULT_IS_PLAYING: "true"
-    MOCKUP_NO_ACTUAL_PLAYING: "false"
+    MOCKUP_NO_ACTUAL_PLAYING: "true"
     MOCKUP_AUTOSKIP_SECONDS: "0"
     INTERNAL_POLL_INTERVAL: "5000"
     EVENT_URL: "www.opendj.io"
 
   SERVICE_WEB:
-    REPLICAS: 1
+    REPLICAS: 2
     LOG_LEVEL: "error"
+    THROTTLE_EMITTER_PLAYLIST: 5000
+    GRID_RECONNECT_INTERVAL: 300
 
   SERVICE_EVENTACTIVITY:
     REPLICAS: 1
