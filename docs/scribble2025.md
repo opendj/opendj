@@ -228,6 +228,13 @@ ssh -i "~/.ssh/opendj-aws.pem" ec2-user@ec2-3-69-29-206.eu-central-1.compute.ama
 
 sudo dnf install nginx -y
 
+>>> that seems to be way more complicated then expected. Better idea:
+
+## Move prod environment to IONOS VPS, thats not much more expensive compared to AWS, and we get full blown IPV4 and IP V6
+We simply use all things upstream, i.e. alma linux, upstream microshift, infinispan etc.
+
+
+
 ## Deploy Cert Manager using helm:
 helm install   cert-manager oci://quay.io/jetstack/charts/cert-manager   --version v1.20.3   --namespace cert-manager   --create-namespace   --set crds.enabled=true
 

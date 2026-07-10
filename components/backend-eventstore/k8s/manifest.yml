@@ -13,13 +13,13 @@
     resources:
       requests:
         cpu: "100m"
-        memory: "256Mi"
+        memory: "{{ ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY }}Mi"
       limits:
         cpu: "{{ ENV.BACKEND_EVENTSTORE.LIMIT_CPU }}"
         memory: "{{ ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY }}Mi"
     jvmOptions:
-      -Xms: "{{ (ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY | int * 0.5) | int}}m" # Minimum heap size
-      -Xmx: "{{ (ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY | int * 0.75) | int}}m" # Maximum heap size
+      -Xms: "{{ (ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY | int * 0.3) | int}}m" # Minimum heap size
+      -Xmx: "{{ (ENV.BACKEND_EVENTSTORE.LIMIT_MEMORY | int * 0.3) | int}}m" # Maximum heap size
 #      -Xms: 128m 
 #      -Xmx: 512m
     storage:

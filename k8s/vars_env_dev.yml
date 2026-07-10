@@ -32,11 +32,11 @@ specific:
     REPLICAS: 1
 
   PROVIDER_SPOTIFY:
-    LOG_LEVEL: "trace"
+    LOG_LEVEL: "debug"
     REPLICAS: 1
 
   SERVICE_PLAYLIST:
-    LOG_LEVEL: "trace"
+    LOG_LEVEL: "debug"
     TEST_EVENT_ID: "demo"
     DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
     MOCKUP_NO_ACTUAL_PLAYING: "true"
@@ -45,7 +45,8 @@ specific:
     REPLICAS: 1
 
   SERVICE_WEB:
-    REPLICAS: 1
+    LOG_LEVEL: "debug"
+    REPLICAS: 2
 
   SERVICE_EVENTACTIVITY:
     REPLICAS: 1

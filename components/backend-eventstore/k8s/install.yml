@@ -27,7 +27,7 @@
         kubeconfig: "{{ ENV.COMMON.K8S.KUBECONFIG }}"
         kind: Pod
         namespace: "{{ ENV.COMMON.NAMESPACE }}"
-        name: backend-eventstore-dual-role-0
+        name: backend-eventstore-kafka-0
 #        label_selectors:
 #          - "key = value"
         wait: yes
