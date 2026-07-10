@@ -59,6 +59,8 @@
                 value: "{{ ENV.SERVICE_WEB.TOPIC_REPLICATION_FACTOR | default('1') }}"
               - name: THROTTLE_EMITTER_PLAYLIST
                 value: "{{ ENV.SERVICE_WEB.THROTTLE_EMITTER_PLAYLIST | default('5000') }}"
+              - name: GRID_RECONNECT_INTERVAL
+                value: "{{ ENV.SERVICE_WEB.GRID_RECONNECT_INTERVAL | default('60') }}"
               - name: EMIT_ACTIVITY
                 value: "{{ ENV.SERVICE_EVENTACTIVITY.EMIT_ACTIVITY | default('true') }}"
               - name: EVENTACTIVITY_PROVIDER_URL

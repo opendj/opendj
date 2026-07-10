@@ -12,6 +12,7 @@ const { v1: uuidv1 } = require('uuid');
 const eventActivityClient = require('./EventActivityClient');
 const port = process.env.PORT || 8083;
 const ENV_THROTTLE_EMITTER_PLAYLIST = parseInt(process.env.THROTTLE_EMITTER_PLAYLIST || '1000');
+const ENV_GRID_RECONNECT_INTERVAL = parseInt(process.env.GRID_RECONNECT_INTERVAL || '300');
 const ENV_EMIT_ACTIVITY = (process.env.EMIT_ACTIVITY || 'true') == 'true';
 
 const ENV_KAFKA_HOST = process.env.KAFKA_HOST || "localhost:9092";
@@ -448,6 +449,19 @@ async function connectToGrid(name) {
     return grid;
 }
 
+function disconnectFromGrid(grid) {
+    log.trace("begin disconnectFromGrid");
+
+    if (grid != null) {
+        try {
+            grid.disconnect();
+        } catch (err) {
+            log.warn("Error disconnecting from old grid is ignored", err);
+        }
+    }
+    log.trace("end disconnectFromGrid");
+}
+
 async function getFromGrid(grid, key) {
     try {
         let val = await grid.get(key);
@@ -477,13 +491,23 @@ async function addCUDListenerForGrid(grid, listener) {
 
 async function connectToDatagrid() {
     log.info("Connecting to datagrid...");
-    gridEvents = await connectToGrid("EVENTS");
-    gridPlaylists = await connectToGrid("PLAYLISTS");
+    let oldGridEvents = gridEvents;
+    let oldGridPlaylists = gridPlaylists;
 
+    let newGridEvents = await connectToGrid("EVENTS");
+    let newGridPlaylists = await connectToGrid("PLAYLISTS");
 
     log.debug("Register listeners...");
-    await addCUDListenerForGrid(gridEvents, onEventModified);
-    await addCUDListenerForGrid(gridPlaylists, onPlaylistModifiedWithThrottle);
+    await addCUDListenerForGrid(newGridEvents, onEventModified);
+    await addCUDListenerForGrid(newGridPlaylists, onPlaylistModifiedWithThrottle);
+
+    log.debug("Swap connections");
+    gridEvents = newGridEvents;
+    gridPlaylists = newGridPlaylists;
+
+    log.debug("Disconnecting old connections");
+    disconnectFromGrid(oldGridEvents);
+    disconnectFromGrid(oldGridPlaylists);
 
     log.debug("Connecting to datagrid...DONE");
     readyState.datagridClient = true;
@@ -856,7 +880,7 @@ router.get('/health', readyAndHealthCheck);
 setImmediate(async function() {
     try {
         await connectToDatagrid();
-        startKafkaConsumer();
+//        startKafkaConsumer();
 
         const server = http.listen(port, function() {
             log.info('listening on *: ' + port);
@@ -886,3 +910,7 @@ setImmediate(async function() {
         process.exit(42);
     }
 });
+
+// Fix for opendj#372 - missed update events from grid after grid server restarts
+// Workaround: Periodically reconnect to the grid:
+setInterval(connectToDatagrid, ENV_GRID_RECONNECT_INTERVAL*1000);
