@@ -49,6 +49,7 @@ async function connectToGrid(name) {
             }});
         log.trace("end connected to grid %s", name);
     } catch (err) {
+        log.error("connectToGrid  %s failed with error", name, err);
         throw "DataGrid connection FAILED with err " + err;
     }
 
@@ -196,6 +197,7 @@ async function checkEvents() {
     log.trace("checkEvents end");
 }
 
+var errorCounter = 0;
 
 async function main() {
     try {
@@ -205,7 +207,6 @@ async function main() {
         gridPlaylists = await connectToGrid("PLAYLISTS");
         gridProviderSpotify = await connectToGrid("PROVIDER_SPOTIFY_STATE");
 
-
         await checkEvents();
 
         log.debug("Disconnecting from datagrid...");
@@ -214,13 +215,26 @@ async function main() {
         gridPlaylists.disconnect();
         gridProviderSpotify.disconnect();
 
+        // Success - reset error counter:
+        errorCounter = 0;
+
+        gridEvents = null;
+        gridEventExt = null;
+        gridPlaylists = null;
+        gridProviderSpotify = null;
         log.debug("END HOUSEKEEPING");
     } catch (err) {
-        log.fatal("!!!!!!!!!!!!!!!");
-        log.fatal("main failed with err %s", err);
-        log.fatal("Terminating now");
-        log.fatal("!!!!!!!!!!!!!!!");
-        process.exit(42);
+        errorCounter++;
+
+        log.error("!!!!!!!!!!!!!!!");
+        log.error("main failed %d time(s), now with err %s", errorCounter, err);
+        if (errorCounter > 2 || !ENV_CRONTAB) {
+            log.fatal("%d errors in a row -  terminating!", errorCounter);
+            process.exit(42);
+        } else {
+            log.error("Will retry on next cron interval");
+        }
+        log.error("!!!!!!!!!!!!!!!");
     }
 }
 

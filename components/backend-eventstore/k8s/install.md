@@ -17,6 +17,7 @@ sed -i '' 's/namespace: .*/namespace: kafka-operator/' install/cluster-operator/
 # - name: STRIMZI_NAMESPACE
 #           value: "*"
 
+# ALSO: Change resource requests/limits for memory to req=128Mi and limit=256Mi
  vi install/cluster-operator/060-Deployment-strimzi-cluster-operator.yaml
 
 

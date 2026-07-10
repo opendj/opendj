@@ -317,5 +317,13 @@ oc delete pods --wait=false -l app=frontend-web
 oc delete pods --wait=false -l app=service-eventactivity
 oc delete pods --wait=false -l app=service-housekeeping
 
-
+#
+# Delete all deployments for a fresh deployment
+#
+oc delete Deployment/provider-spotify
+oc delete Deployment/service-playlist
+oc delete Deployment/service-web
+oc delete Deployment/frontend-web
+oc delete Deployment/service-eventactivity
+oc delete Deployment/service-housekeeping
 

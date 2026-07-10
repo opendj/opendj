@@ -45,7 +45,7 @@ specific:
     REPLICAS: 2
 
   SERVICE_WEB:
-    LOG_LEVEL: "debug"
+    LOG_LEVEL: "info"
     REPLICAS: 2
     GRID_RECONNECT_INTERVAL: 10
 
