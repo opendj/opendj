@@ -33,9 +33,12 @@ const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://local
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
 const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
+const GRID_RETRY_MAX = parseInt(process.env.GRID_RETRY_MAX || '10');
+const GRID_RETRY_INTERVAL_MS = parseInt(process.env.GRID_RETRY_INTERVAL_MS || '1000');
 const datagrid = require('infinispan');
 var cacheTracks = null;
 var cacheState = null;
+const cacheNames = new Map();
 
 const CACHE_CONFIG_XML = `<infinispan>
     <cache-container>
@@ -118,7 +121,14 @@ async function connectToCache(name) {
       }
     }
 
+    cacheNames.set(cache, name);
     return cache;
+}
+
+function getCacheByName(name) {
+    if (name === "TRACKS") return cacheTracks;
+    if (name === "PROVIDER_SPOTIFY_STATE") return cacheState;
+    return null;
 }
 
 function disconnectFromCache(cache) {
@@ -167,35 +177,78 @@ async function connectAllCaches() {
     log.trace("end connectAllCaches");
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function getFromCache(cache, key) {
-    try {
-        let val = await cache.get(key);
-        if (val)
-            val = JSON.parse(val);
-        return val;
-    } catch (err) {
-        handleCacheError(cache, err);
-        throw err;
+    let lastErr = null;
+    let name = cacheNames.get(cache);
+    for (let attempt = 1; attempt <= GRID_RETRY_MAX + 1; attempt++) {
+        try {
+            let val = await cache.get(key);
+            if (val)
+                val = JSON.parse(val);
+            return val;
+        } catch (err) {
+            lastErr = err;
+            log.error("!!! getFromCache failed (attempt %s/%s) with error=%s", attempt, GRID_RETRY_MAX + 1, err);
+            if (attempt <= GRID_RETRY_MAX) {
+                log.warn("Waiting %s ms before retry...", GRID_RETRY_INTERVAL_MS);
+                await sleep(GRID_RETRY_INTERVAL_MS);
+                try {
+                    await connectAllCaches();
+                    cache = getCacheByName(name);
+                } catch (reconnErr) {
+                    log.error("Reconnect failed: %s", reconnErr);
+                }
+            }
+        }
     }
+    log.fatal("!!! getFromCache failed after %s retries", GRID_RETRY_MAX);
+    handleCacheError(cache, lastErr);
+    throw lastErr;
 }
 
 async function putIntoCache(cache, key, value) {
-    log.trace("begin putIntoCache");
-    await cache.put(key, JSON.stringify(value));
-    log.trace("end putIntoCache");
+    log.trace("begin putIntoCache key=%s", key);
+    let lastErr = null;
+    let name = cacheNames.get(cache);
+    for (let attempt = 1; attempt <= GRID_RETRY_MAX + 1; attempt++) {
+        try {
+            await cache.put(key, JSON.stringify(value));
+            log.trace("end putIntoCache key=%s", key);
+            return;
+        } catch (err) {
+            lastErr = err;
+            log.error("!!! putIntoCache failed (attempt %s/%s) with error=%s", attempt, GRID_RETRY_MAX + 1, err);
+            if (attempt <= GRID_RETRY_MAX) {
+                log.warn("Waiting %s ms before retry...", GRID_RETRY_INTERVAL_MS);
+                await sleep(GRID_RETRY_INTERVAL_MS);
+                try {
+                    await connectAllCaches();
+                    cache = getCacheByName(name);
+                } catch (reconnErr) {
+                    log.error("Reconnect failed: %s", reconnErr);
+                }
+            }
+        }
+    }
+    log.fatal("!!! putIntoCache failed after %s retries", GRID_RETRY_MAX);
+    handleCacheError(cache, lastErr);
+    throw lastErr;
 }
 
 function putIntoCacheAsync(cache, key, value) {
-    log.trace("begin putIntoCacheAsync cache=%s, key=%s, value=%s", cache, key, value);
-    cache.put(key, JSON.stringify(value))
+    log.trace("begin putIntoCacheAsync key=%s", key);
+    putIntoCache(cache, key, value)
         .then(function() {
             log.trace("putIntoCacheAsync success");
         })
         .catch(function(err) {
-            log.warn("putIntoCacheAsync failed - ignoring error %s", err);
-            handleCacheError(cache, err);
+            log.warn("putIntoCacheAsync failed after all retries - ignoring error %s", err);
         });
-    log.trace("end putIntoCache");
+    log.trace("end putIntoCacheAsync");
 }
 
 function fireEventStateChange(event) {
@@ -205,11 +258,10 @@ function fireEventStateChange(event) {
 }
 
 function handleCacheError(cache, err) {
-    log.error("Cache error: %s", err);
-    log.error("cache=%s", JSON.stringify(cache));
+    log.fatal("!!! Cache error - all retries exhausted. Terminating !!!", err);
     readyState.datagridClient = false;
     readyState.lastError = err;
-    handleFatalError();
+    process.exit(44);
 }
 
 // --------------------------------------------------------------------------

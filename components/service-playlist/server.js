@@ -1813,6 +1813,11 @@ const datagrid = require('infinispan');
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
 const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
+const GRID_RETRY_MAX = parseInt(process.env.GRID_RETRY_MAX || '10');
+const GRID_RETRY_INTERVAL_MS = parseInt(process.env.GRID_RETRY_INTERVAL_MS || '1000');
+
+const gridCacheNames = new Map();
+
 const CACHE_CONFIG_XML = `<infinispan>
     <cache-container>
         <distributed-cache mode="SYNC" name="dummy" owners="2">
@@ -1896,55 +1901,122 @@ async function connectToGrid(name) {
         }
     }
 
+    gridCacheNames.set(grid, name);
     return grid;
 }
 
+async function reconnectGrid(grid) {
+    let name = gridCacheNames.get(grid);
+    log.warn("Reconnecting to grid cache %s ...", name);
+    let newGrid = await connectToGrid(name);
+    if (gridEvents === grid) gridEvents = newGrid;
+    if (gridEventExt === grid) gridEventExt = newGrid;
+    if (gridEventLck === grid) gridEventLck = newGrid;
+    if (gridPlaylists === grid) gridPlaylists = newGrid;
+    log.info("Reconnected to grid cache %s", name);
+    return newGrid;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function getFromGrid(grid, key) {
-    let val = null;
-    try {
-        val = await grid.get(key);
-        if (val) {
-            val = JSON.parse(val);
+    let lastErr = null;
+    for (let attempt = 1; attempt <= GRID_RETRY_MAX; attempt++) {
+        try {
+            let val = await grid.get(key);
+            if (val) {
+                val = JSON.parse(val);
+            }
+            return val;
+        } catch (err) {
+            lastErr = err;
+            log.error("!!! getFromGrid failed (attempt %s/%s) with error=%s", attempt, GRID_RETRY_MAX, err);
+            if (attempt <= GRID_RETRY_MAX) {
+                log.warn("Waiting %s ms before retry...", GRID_RETRY_INTERVAL_MS);
+                await sleep(GRID_RETRY_INTERVAL_MS);
+                try {
+                    grid = await reconnectGrid(grid);
+                } catch (reconnErr) {
+                    log.error("Reconnect failed: %s", reconnErr);
+                }
+            }
         }
-        return val;
-    } catch (err) {
-        log.error("!!! getFromGrid failed with error="+err);
-        log.error("value from grid="+val);
-        log.error(val);
-        log.error("val.toString="+val.toString());
-        log.error("inspect"+util.inspect(val, { depth: null }));
-        handleGridError(grid, err);
-        throw err;
     }
+    log.fatal("!!! getFromGrid failed after %s retries", GRID_RETRY_MAX);
+    handleGridError(grid, lastErr);
+    throw lastErr;
 }
 
 async function putIntoGrid(grid, key, value) {
-    log.trace("begin putIntoGrid grid=%s, key=%s, value=%s", grid, key, value);
-    await grid.put(key, JSON.stringify(value));
-    log.trace("end putIntoGrid key=%s", key);
+    log.trace("begin putIntoGrid key=%s", key);
+    let lastErr = null;
+    for (let attempt = 1; attempt <= GRID_RETRY_MAX + 1; attempt++) {
+        try {
+            await grid.put(key, JSON.stringify(value));
+            log.trace("end putIntoGrid key=%s", key);
+            return;
+        } catch (err) {
+            lastErr = err;
+            log.error("!!! putIntoGrid failed (attempt %s/%s) with error=%s", attempt, GRID_RETRY_MAX + 1, err);
+            if (attempt <= GRID_RETRY_MAX) {
+                log.warn("Waiting %s ms before retry...", GRID_RETRY_INTERVAL_MS);
+                await sleep(GRID_RETRY_INTERVAL_MS);
+                try {
+                    grid = await reconnectGrid(grid);
+                } catch (reconnErr) {
+                    log.error("Reconnect failed: %s", reconnErr);
+                }
+            }
+        }
+    }
+    log.fatal("!!! putIntoGrid failed after %s retries", GRID_RETRY_MAX);
+    handleGridError(grid, lastErr);
+    throw lastErr;
 }
 
 async function removeFromGrid(grid, key) {
-    log.trace("begin removeFromGrid grid=%s, key=%s", grid, key);
-    await grid.remove(key);
-    log.trace("end removeFromGrid key=%s", key);
+    log.trace("begin removeFromGrid key=%s", key);
+    let lastErr = null;
+    for (let attempt = 1; attempt <= GRID_RETRY_MAX + 1; attempt++) {
+        try {
+            await grid.remove(key);
+            log.trace("end removeFromGrid key=%s", key);
+            return;
+        } catch (err) {
+            lastErr = err;
+            log.error("!!! removeFromGrid failed (attempt %s/%s) with error=%s", attempt, GRID_RETRY_MAX + 1, err);
+            if (attempt <= GRID_RETRY_MAX) {
+                log.warn("Waiting %s ms before retry...", GRID_RETRY_INTERVAL_MS);
+                await sleep(GRID_RETRY_INTERVAL_MS);
+                try {
+                    grid = await reconnectGrid(grid);
+                } catch (reconnErr) {
+                    log.error("Reconnect failed: %s", reconnErr);
+                }
+            }
+        }
+    }
+    log.fatal("!!! removeFromGrid failed after %s retries", GRID_RETRY_MAX);
+    handleGridError(grid, lastErr);
+    throw lastErr;
 }
 
 function putIntoGridAsync(grid, key, value) {
-    log.trace("begin putIntoGridAsync grid=%s, key=%s, value=%s", grid, key, value);
-    grid.put(key, JSON.stringify(value))
+    log.trace("begin putIntoGridAsync key=%s", key);
+    putIntoGrid(grid, key, value)
         .then(function() {
             log.trace("putIntoGridAsync success");
         })
         .catch(function(err) {
-            log.warn("putIntoGridAsync failed - ignoring error %s", err);
-            handleGridError(grid, err);
+            log.warn("putIntoGridAsync failed after all retries - ignoring error %s", err);
         });
     log.trace("end putIntoGridAsync");
 }
 
 function handleGridError(grid, err) {
-    log.fatal("!!! Grid error !!!", err);
+    log.fatal("!!! Grid error - all retries exhausted. Terminating!!!", err);
     readyState.datagridClient = false;
     readyState.lastError = err;
     process.exit(44);

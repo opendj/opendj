@@ -47,6 +47,10 @@
                 value: "8080"
               - name: DATAGRID_URL
                 value: "{{ ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222') }}"
+              - name: GRID_RETRY_MAX
+                value: "{{ ENV.BACKEND_DATAGRID.GRID_RETRY_MAX | default('10') }}"
+              - name: GRID_RETRY_INTERVAL_MS
+                value: "{{ ENV.BACKEND_DATAGRID.GRID_RETRY_INTERVAL_MS | default('1000') }}"
               - name: SPOTIFY_PROVIDER_URL
                 value: "{{ ENV.SERVICE_PLAYLIST.SPOTIFY_PROVIDER_URL | default('http://provider-spotify:8080/api/provider-spotify/v1/') }}"
               - name: TRACKAI_PROVIDER_URL

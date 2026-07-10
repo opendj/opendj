@@ -880,7 +880,7 @@ router.get('/health', readyAndHealthCheck);
 setImmediate(async function() {
     try {
         await connectToDatagrid();
-//        startKafkaConsumer();
+        startKafkaConsumer();
 
         const server = http.listen(port, function() {
             log.info('listening on *: ' + port);

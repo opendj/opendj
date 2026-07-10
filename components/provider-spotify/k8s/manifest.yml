@@ -57,6 +57,10 @@
                 value: "8080"
               - name: DATAGRID_URL
                 value: "{{ ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222') }}"
+              - name: GRID_RETRY_MAX
+                value: "{{ ENV.BACKEND_DATAGRID.GRID_RETRY_MAX | default('10') }}"
+              - name: GRID_RETRY_INTERVAL_MS
+                value: "{{ ENV.BACKEND_DATAGRID.GRID_RETRY_INTERVAL_MS | default('1000') }}"
               - name: SPOTIFY_CALLBACK_URL
                 value: "{{ ENV.PROVIDER_SPOTIFY.SPOTIFY_CALLBACK_URL }}"
               - name: SPOTIFY_REFRESH_TOKEN_INTERVAL

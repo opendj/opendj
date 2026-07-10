@@ -51,10 +51,14 @@ common:
     SPOTIFY_CALLBACK_URL: "https://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     SPOTIFY_CLIENT_ID: "{{VAULT_SPOTIFY_CLIENT_ID}}"
     SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
+    GRID_RETRY_INTERVAL_MS: 1000
+    GRID_RETRY_MAX: 10
 
   SERVICE_PLAYLIST:
     DEPLOY: true
     EVENT_URL: "{{STAGE}}.opendj.io"
+    GRID_RETRY_INTERVAL_MS: 1000
+    GRID_RETRY_MAX: 10
 
   SERVICE_WEB:
     DEPLOY: true
