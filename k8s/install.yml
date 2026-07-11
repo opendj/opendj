@@ -36,7 +36,8 @@
         definition: "{{ lookup('template', '../secret_{{ ENV.COMMON.K8S.INGRESS_TLS_SECRET }}') | from_yaml }}"
 
     - name: Create TLS cert via cert-mgr
-      when: ENV.COMMON.CERTMGR.DEPLOY and not tls_cert.stat.exists
+      when: ENV.COMMON.CERTMGR.DEPLOY 
+#      when: ENV.COMMON.CERTMGR.DEPLOY and not tls_cert.stat.exists
       tags: certmgr
       block:
         - name: Apply certmgr manifest
