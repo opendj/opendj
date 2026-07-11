@@ -29,7 +29,7 @@ specific:
     REPLICAS: 1
 
   BACKEND_DATAGRID:
-    REPLICAS: 2
+    REPLICAS: 1
 
   PROVIDER_SPOTIFY:
     LOG_LEVEL: "debug"
