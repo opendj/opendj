@@ -1,0 +1,20 @@
+dns:
+  baseDomain: prd1.opendj.io
+network:
+  clusterNetwork:
+    - 10.42.0.0/16
+    - fd01::/48  
+  serviceNetwork:
+    - 10.43.0.0/16
+    - fd02::/112  
+  serviceNodePortRange: 30000-32767
+storage:
+  optionalCsiComponents:
+    - "none"
+node:
+  hostnameOverride: "prd1"
+  nodeIP: "31.70.110.115"
+  nodeIPv6: "2a01:239:4d1:9500::1"
+apiServer:
+  subjectAltNames: []
+debugging:

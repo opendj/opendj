@@ -1,0 +1,10 @@
+opendj.io A 174.129.25.170
+
+dev.opendj.io AAAA 2001:16b8:a1aa:cf00:a00:27ff:feb0:d8bd
+
+prd1.opendj.io A 31.70.110.115
+prd1.opendj.io AAAA 2a01:239:4d1:9500::1
+www.opendj.io CNAME prd1.opendj.io
+
+
+opendj.io MX 10 mx00.emig.kundenserver.de 20 mx01.emig.kundenserver.de
