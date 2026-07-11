@@ -236,7 +236,8 @@ We simply use all things upstream, i.e. alma linux, upstream microshift, infinis
 
 
 ## Deploy Cert Manager using helm:
-helm install   cert-manager oci://quay.io/jetstack/charts/cert-manager   --version v1.20.3   --namespace cert-manager   --create-namespace   --set crds.enabled=true
+helm install   cert-manager oci://quay.io/jetstack/charts/cert-manager   --version v1.20.3   --namespace cert-manager   --create-namespace   --set crds.enabled=true --set featureGates="ACMEHTTP01IngressPathTypeExact=false"
+
 
 That does not work out of the box, because new cert-manager version uses Ingress with 
 Starting in version 1.18, cert-manager changed the default pathType for its temporary HTTP-01 challenge Ingress objects from ImplementationSpecific to Exact.

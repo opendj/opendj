@@ -64,6 +64,7 @@ common:
     DEPLOY: true
     THROTTLE_EMITTER_PLAYLIST: 5000
     GRID_RECONNECT_INTERVAL: 300
+    EMIT_ACTIVITY: "true"
 
   SERVICE_HOUSEKEEPING:
     DEPLOY: true
@@ -73,7 +74,6 @@ common:
     REPLICAS: 2
     PROVIDER_URL: "http://service-eventactivity:8080/api/service-eventactivity/v1/"
     DEPLOY: true
-    EMIT_ACTIVITY: true
 
 
   FRONTEND_WEB:

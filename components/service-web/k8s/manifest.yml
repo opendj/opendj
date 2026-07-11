@@ -62,7 +62,7 @@
               - name: GRID_RECONNECT_INTERVAL
                 value: "{{ ENV.SERVICE_WEB.GRID_RECONNECT_INTERVAL | default('60') }}"
               - name: EMIT_ACTIVITY
-                value: "{{ ENV.SERVICE_EVENTACTIVITY.EMIT_ACTIVITY | default('true') }}"
+                value: "{{ ENV.SERVICE_WEB.EMIT_ACTIVITY | default('true') }}"
               - name: EVENTACTIVITY_PROVIDER_URL
                 value: "{{ ENV.SERVICE_EVENTACTIVITY.PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/') }}"
             envFrom:

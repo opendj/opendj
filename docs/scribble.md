@@ -327,3 +327,7 @@ oc delete Deployment/frontend-web
 oc delete Deployment/service-eventactivity
 oc delete Deployment/service-housekeeping
 
+#
+# Logs
+# 
+oc logs -f Deployment/service-web  | less
