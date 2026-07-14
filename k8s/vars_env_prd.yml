@@ -60,5 +60,5 @@ specific:
   FRONTEND_WEB:
     REPLICAS: 1
     USE_ACME_CERTS: "true"
-    SERVER_TIMEOUT: "10000"
+    SERVER_TIMEOUT: "5000"
   

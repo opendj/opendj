@@ -25,6 +25,9 @@ common:
 #      SERVER: "https://acme-staging-v02.api.letsencrypt.org/directory"
   # For PROD:
       SERVER: "https://acme-v02.api.letsencrypt.org/directory"
+    NODEJS:
+      MAX_OLD_SPACE_FACTOR: 0.75
+
 
   BACKEND_EVENTSTORE:
     DEPLOY: true
@@ -53,27 +56,39 @@ common:
     SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
     GRID_RETRY_INTERVAL_MS: 1000
     GRID_RETRY_MAX: 10
+    CPU_REQUEST: "100m"
+    MEM_REQUEST_MI: "128"
 
   SERVICE_PLAYLIST:
     DEPLOY: true
     EVENT_URL: "{{STAGE}}.opendj.io"
     GRID_RETRY_INTERVAL_MS: 1000
     GRID_RETRY_MAX: 10
+    CPU_REQUEST: "100m"
+    MEM_REQUEST_MI: "128"
 
   SERVICE_WEB:
     DEPLOY: true
     THROTTLE_EMITTER_PLAYLIST: 5000
     GRID_RECONNECT_INTERVAL: 300
     EMIT_ACTIVITY: "true"
+    CPU_REQUEST: "100m"
+    MEM_REQUEST_MI: "128"
 
   SERVICE_HOUSEKEEPING:
     DEPLOY: true
     CRONTAB: "0,30 * * * * *"
+    CPU_REQUEST: "50m"
+    MEM_REQUEST_MI: "96"
 
   SERVICE_EVENTACTIVITY:
     REPLICAS: 2
     PROVIDER_URL: "http://service-eventactivity:8080/api/service-eventactivity/v1/"
     DEPLOY: true
+    CPU_REQUEST: "100m"
+    CPU_LIMIT: "250m"
+    MEM_REQUEST_MI: "128"
+    MEM_LIMIT_MI: "196"
 
 
   FRONTEND_WEB:
@@ -85,3 +100,7 @@ common:
     INSECURE_EDGE_TERMINATION: "Allow"
     SPOTIFY_CALLBACK_URL: "https://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     USE_RUNTIME_IMAGE: true
+    CPU_REQUEST: "50m"
+    CPU_LIMIT: "250m"
+    MEM_REQUEST_MI: "32"
+    MEM_LIMIT_MI: "96"

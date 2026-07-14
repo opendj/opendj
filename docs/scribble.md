@@ -66,13 +66,13 @@ http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/logi
 
 
 
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/currentTrack
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/devices
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?q=Michael+Jackson
-http://localhost:8080/api/provider-spotify/v1/events/demo/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
+http://localhost:8081/api/provider-spotify/v1/events/0/providers/spotify/login
+http://localhost:8081/api/provider-spotify/v1/events/0/providers/spotify/currentTrack
+http://localhost:8081/api/provider-spotify/v1/events/0/providers/spotify/devices
+http://localhost:8081/api/provider-spotify/v1/events/0/providers/spotify/search?q=Michael+Jackson
+http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/pause/
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
+http://localhost:8081/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
 
 http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW?pos=5000
 
@@ -318,6 +318,17 @@ oc delete pods --wait=false -l app=service-eventactivity
 oc delete pods --wait=false -l app=service-housekeeping
 
 #
+# Trigger a fresh rollout
+#
+oc rollout restart Deployment/provider-spotify 
+oc rollout restart Deployment/service-playlist
+oc rollout restart Deployment/service-web
+oc rollout restart Deployment/frontend-web
+oc rollout restart Deployment/service-eventactivity
+oc rollout restart Deployment/service-housekeeping
+
+
+#
 # Delete all deployments for a fresh deployment
 #
 oc delete Deployment/provider-spotify
@@ -331,3 +342,4 @@ oc delete Deployment/service-housekeeping
 # Logs
 # 
 oc logs -f Deployment/service-web  | less
+oc logs -f Deployment/service-eventactivity| less

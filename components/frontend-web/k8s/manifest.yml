@@ -46,7 +46,6 @@
             volumeMounts:                        
               - mountPath: /usr/share/nginx/html/conf
                 name: volume-cfgmap
-#                subPath: config.json
             ports:
               - containerPort: 8080
                 protocol: TCP
@@ -81,8 +80,11 @@
               failureThreshold: 3
             resources:
               requests:
-                cpu: 50m
-                memory: 64Mi
+                cpu: "{{ ENV.FRONTEND_WEB.CPU_REQUEST | default('50m') }}"
+                memory: "{{ ENV.FRONTEND_WEB.MEM_REQUEST_MI | default('64') }}Mi"
+              limits:
+                cpu: "{{ ENV.FRONTEND_WEB.CPU_LIMIT | default('50m') }}"
+                memory: "{{ ENV.FRONTEND_WEB.MEM_LIMIT_MI | default('64') }}Mi"
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
         dnsPolicy: ClusterFirst

@@ -87,6 +87,8 @@
                 value: "{{ ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8080/api/service-playlist/v1/') }}"
               - name: MAX_PLAY_ERRORS
                 value: "{{ ENV.PROVIDER_SPOTIFY.MAX_PLAY_ERRORS | default('3') }}"
+              - name: NODE_OPTIONS
+                value: "--max-old-space-size={{(ENV.PROVIDER_SPOTIFY.MEM_REQUEST_MI| float * ENV.COMMON.NODEJS.MAX_OLD_SPACE_FACTOR | float) | int }}"
             envFrom:
               - prefix: SPOTIFY_
                 secretRef:
@@ -116,8 +118,10 @@
               failureThreshold: 3
             resources:
               requests:
-                cpu: 100m
-                memory: 128Mi
+                cpu: "{{ ENV.PROVIDER_SPOTIFY.CPU_REQUEST | default('100m') }}"
+                memory: "{{ ENV.PROVIDER_SPOTIFY.MEM_REQUEST_MI | default('128') }}Mi"
+              limits:
+                memory: "{{ ENV.PROVIDER_SPOTIFY.MEM_REQUEST_MI | default('128') }}Mi"
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
         dnsPolicy: ClusterFirst

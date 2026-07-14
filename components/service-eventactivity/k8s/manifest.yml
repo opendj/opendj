@@ -69,10 +69,14 @@
               timeoutSeconds: 1
               successThreshold: 1
               failureThreshold: 3
+
             resources:
               requests:
-                cpu: 100m
-                memory: 128Mi
+                cpu: "{{ ENV.SERVICE_EVENTACTIVITY.CPU_REQUEST | default('50m') }}"
+                memory: "{{ ENV.SERVICE_EVENTACTIVITY.MEM_REQUEST_MI | default('64') }}Mi"
+              limits:
+                cpu: "{{ ENV.SERVICE_EVENTACTIVITY.CPU_LIMIT | default('50m') }}"
+                memory: "{{ ENV.SERVICE_EVENTACTIVITY.MEM_LIMIT_MI | default('64') }}Mi"
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
         dnsPolicy: ClusterFirst
